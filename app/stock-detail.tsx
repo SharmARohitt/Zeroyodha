@@ -12,18 +12,27 @@ import { useTradingStore } from '../src/store/useTradingStore';
 import { Ionicons } from '@expo/vector-icons';
 import { formatCurrency, formatPercent } from '../src/utils/formatters';
 import FloatingTradeButton from '../src/components/FloatingTradeButton';
+import CandlestickChart from '../src/components/CandlestickChart';
+import { marketDataService } from '../src/services/marketDataService';
+import { Candle } from '../src/types';
 
 export default function StockDetailScreen() {
   const { symbol } = useLocalSearchParams<{ symbol: string }>();
   const router = useRouter();
   const { stocks, setSelectedSymbol } = useMarketStore();
   const stock = symbol ? stocks[symbol] : null;
+  const [candleData, setCandleData] = useState<Candle[]>([]);
+  const [chartType, setChartType] = useState<'1D' | '1W' | '1M' | '3M'>('1M');
+  const [selectedCandle, setSelectedCandle] = useState<Candle | null>(null);
 
   useEffect(() => {
     if (symbol) {
       setSelectedSymbol(symbol);
+      // Generate candle data with proper period support
+      const candles = marketDataService.generateCandleData(symbol, chartType);
+      setCandleData(candles);
     }
-  }, [symbol]);
+  }, [symbol, chartType]);
 
   if (!stock) {
     return (
@@ -66,6 +75,44 @@ export default function StockDetailScreen() {
             {formatCurrency(stock.change)} ({formatPercent(stock.changePercent)})
           </Text>
         </View>
+      </View>
+
+      {/* Chart Section */}
+      <View style={styles.chartSection}>
+        <View style={styles.chartHeader}>
+          <Text style={styles.chartTitle}>Price Chart</Text>
+          <View style={styles.chartTypeSelector}>
+            {(['1D', '1W', '1M', '3M'] as const).map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.chartTypeButton,
+                  chartType === type && styles.chartTypeButtonActive,
+                ]}
+                onPress={() => setChartType(type)}
+              >
+                <Text
+                  style={[
+                    styles.chartTypeText,
+                    chartType === type && styles.chartTypeTextActive,
+                  ]}
+                >
+                  {type}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        <CandlestickChart 
+          data={candleData} 
+          height={400} 
+          theme="dark"
+          showVolume={true}
+          showCrosshair={true}
+          onCandlePress={(candle, index) => {
+            setSelectedCandle(candle);
+          }}
+        />
       </View>
 
       <View style={styles.statsSection}>
@@ -241,6 +288,44 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 100,
+  },
+  chartSection: {
+    backgroundColor: '#0A0A0A',
+    marginTop: 16,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  chartTypeSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  chartTypeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#1A1A1A',
+  },
+  chartTypeButtonActive: {
+    backgroundColor: '#2962FF',
+  },
+  chartTypeText: {
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '600',
+  },
+  chartTypeTextActive: {
+    color: '#FFFFFF',
   },
 });
 
