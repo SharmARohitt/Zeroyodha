@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMarketStore } from '../store/useMarketStore';
@@ -20,9 +20,12 @@ export default function FloatingTradeButton() {
   };
 
   return (
-    <TouchableOpacity style={styles.button} onPress={handlePress} activeOpacity={0.8}>
-      <Ionicons name="add" size={24} color="#FFFFFF" />
-      <Text style={styles.text}>Trade</Text>
+    <TouchableOpacity 
+      style={styles.button} 
+      onPress={handlePress} 
+      activeOpacity={0.8}
+    >
+      <Ionicons name="trending-up" size={24} color="#FFFFFF" />
     </TouchableOpacity>
   );
 }
@@ -30,26 +33,20 @@ export default function FloatingTradeButton() {
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 75, // Closer to bottom navigation (typical tab bar is ~60-70px)
     right: 20,
     backgroundColor: '#2962FF',
-    width: 120,
+    width: 56,
     height: 56,
     borderRadius: 28,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 8,
     shadowColor: '#2962FF',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
-  },
-  text: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
+    zIndex: 1000,
   },
 });
 

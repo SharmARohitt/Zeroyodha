@@ -107,19 +107,39 @@ export const useMarketStore = create<MarketState>((set, get) => ({
       stocksMap[stock.symbol] = stock;
     });
     
-    // Initialize default watchlist with NIFTY50
-    const defaultWatchlist: Watchlist = {
-      id: 'default',
-      name: 'My Watchlist',
-      symbols: stocks.slice(0, 20).map((s) => s.symbol),
-      createdAt: new Date(),
-    };
+    // Initialize multiple default watchlists
+    const existingWatchlists = get().watchlists;
+    if (existingWatchlists.length === 0) {
+      const basicWatchlist: Watchlist = {
+        id: 'basic',
+        name: 'Basic',
+        symbols: stocks.slice(0, 15).map((s) => s.symbol),
+        createdAt: new Date(),
+      };
+      
+      const longTermWatchlist: Watchlist = {
+        id: 'long-term',
+        name: 'Long Term',
+        symbols: stocks.slice(15, 30).map((s) => s.symbol),
+        createdAt: new Date(),
+      };
+      
+      const watchlist3: Watchlist = {
+        id: 'watchlist-3',
+        name: 'Watchlist 3',
+        symbols: stocks.slice(30, 45).map((s) => s.symbol),
+        createdAt: new Date(),
+      };
 
-    set({
-      stocks: stocksMap,
-      watchlists: [defaultWatchlist],
-      currentWatchlist: defaultWatchlist.id,
-    });
+      set({
+        stocks: stocksMap,
+        watchlists: [basicWatchlist, longTermWatchlist, watchlist3],
+        currentWatchlist: basicWatchlist.id,
+      });
+    } else {
+      // Just update stocks if watchlists already exist
+      set({ stocks: stocksMap });
+    }
 
     // Start market data updates
     marketDataService.startUpdates((data) => {

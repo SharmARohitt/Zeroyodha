@@ -28,10 +28,14 @@ export default function StockCard({ stock, onPress }: StockCardProps) {
               </View>
               <View style={styles.info}>
                 <Text style={styles.symbol}>{stock.symbol}</Text>
+                <View style={styles.categoryRow}>
+                  <Text style={styles.category}>
+                    {stock.instrumentType === 'INDEX' ? 'INDICES' : stock.exchange}
+                  </Text>
+                </View>
                 <Text style={styles.name} numberOfLines={1}>
                   {stock.name}
                 </Text>
-                <Text style={styles.exchange}>{stock.exchange}</Text>
               </View>
             </View>
 
@@ -96,14 +100,19 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 4,
   },
+  categoryRow: {
+    marginBottom: 4,
+  },
+  category: {
+    fontSize: 10,
+    color: '#666',
+    textTransform: 'uppercase',
+    fontWeight: '500',
+  },
   name: {
     fontSize: 12,
     color: '#999',
-    marginBottom: 2,
-  },
-  exchange: {
-    fontSize: 10,
-    color: '#666',
+    marginTop: 2,
   },
   rightSection: {
     alignItems: 'flex-end',

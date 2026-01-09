@@ -24,7 +24,7 @@ export default function TabsLayout() {
         options={{
           title: 'Watchlist',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+            <Ionicons name="bookmark" size={size} color={color} />
           ),
         }}
       />
@@ -42,16 +42,16 @@ export default function TabsLayout() {
         options={{
           title: 'Portfolio',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pie-chart" size={size} color={color} />
+            <Ionicons name="briefcase" size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="bids"
         options={{
-          title: 'Discover',
+          title: 'Bids',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="compass" size={size} color={color} />
+            <Ionicons name="hammer" size={size} color={color} />
           ),
         }}
       />

@@ -62,10 +62,11 @@ const INDIAN_STOCKS: Stock[] = [
   { symbol: 'TATACONSUM', name: 'Tata Consumer', exchange: 'NSE', instrumentType: 'EQ', lastPrice: 1150, change: 9, changePercent: 0.79, volume: 600000, high: 1160, low: 1140, open: 1145, prevClose: 1141 },
   { symbol: 'VEDL', name: 'Vedanta', exchange: 'NSE', instrumentType: 'EQ', lastPrice: 280, change: 2.5, changePercent: 0.90, volume: 5000000, high: 283, low: 277, open: 279, prevClose: 277.5 },
   // Indices (for reference)
-  { symbol: 'NIFTY', name: 'NIFTY 50', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 24500, change: 125, changePercent: 0.51, volume: 0, high: 24550, low: 24450, open: 24475, prevClose: 24375 },
-  { symbol: 'BANKNIFTY', name: 'NIFTY Bank', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 52500, change: 250, changePercent: 0.48, volume: 0, high: 52600, low: 52400, open: 52450, prevClose: 52250 },
+  { symbol: 'NIFTY', name: 'NIFTY 50', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 25876.85, change: -263.90, changePercent: -1.00, volume: 0, high: 26100, low: 25800, open: 26000, prevClose: 26140.75 },
+  { symbol: 'BANKNIFTY', name: 'NIFTY Bank', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 59686.50, change: -304.35, changePercent: -0.5, volume: 0, high: 60000, low: 59500, open: 59900, prevClose: 59990.85 },
   { symbol: 'FINNIFTY', name: 'NIFTY Financial Services', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 21500, change: 100, changePercent: 0.47, volume: 0, high: 21550, low: 21450, open: 21475, prevClose: 21400 },
-  { symbol: 'SENSEX', name: 'S&P BSE Sensex', exchange: 'BSE', instrumentType: 'INDEX', lastPrice: 81500, change: 400, changePercent: 0.49, volume: 0, high: 81600, low: 81400, open: 81450, prevClose: 81100 },
+  { symbol: 'SENSEX', name: 'S&P BSE Sensex', exchange: 'BSE', instrumentType: 'INDEX', lastPrice: 84180.96, change: -780.18, changePercent: -0.91, volume: 0, high: 85000, low: 84000, open: 84900, prevClose: 84961.14 },
+  { symbol: 'INDIAVIX', name: 'INDIA VIX', exchange: 'NSE', instrumentType: 'INDEX', lastPrice: 10.60, change: 0.65, changePercent: 6.53, volume: 0, high: 11.00, low: 9.50, open: 9.95, prevClose: 9.95 },
 ];
 
 // Generate more stocks for variety
