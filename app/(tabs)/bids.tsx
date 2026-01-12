@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,32 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
+  Image,
+  Platform,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { IPO } from '../../src/types';
 import { format } from 'date-fns';
 import { newsService, NewsArticle } from '../../src/services/newsService';
+import { useAuthStore } from '../../src/store/useAuthStore';
+import UniversalCarousel from '../../src/components/UniversalCarousel';
+import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
+
+// Theme colors
+const colors = {
+  primary: '#00D4FF', // Blue Neon
+  profit: '#00C853',
+  loss: '#FF5252',
+  warning: '#FFC107',
+  background: '#000000',
+  backgroundSecondary: '#0A0A0A',
+  card: '#1A1A1A',
+  border: '#2A2A2A',
+  text: '#FFFFFF',
+  textMuted: '#666666',
+  textSecondary: '#999999',
+};
 
 // Mock IPO data
 const mockIPOs: IPO[] = [
@@ -42,15 +63,37 @@ const mockIPOs: IPO[] = [
 ];
 
 export default function BidsScreen() {
-  const [activeTab, setActiveTab] = useState<'IPOS' | 'GSEC' | 'NEWS'>('IPOS');
+  const [activeTab, setActiveTab] = useState<'IPOS' | 'GSEC' | 'MUTUAL_FUNDS' | 'NEWS'>('IPOS');
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
+  const { user } = useAuthStore();
+  const logoScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (activeTab === 'NEWS') {
       loadNews();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    // iOS-specific logo animation
+    if (Platform.OS === 'ios') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(logoScale, {
+            toValue: 1.05,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoScale, {
+            toValue: 1,
+            duration: 3000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, []);
 
   const loadNews = async () => {
     setNewsLoading(true);
@@ -64,11 +107,66 @@ export default function BidsScreen() {
     }
   };
 
+  const carouselItems = [
+    {
+      title: 'Active IPOs',
+      value: '12',
+      color: colors.profit,
+      subtitle: 'Open Now',
+    },
+    {
+      title: 'Total Bids',
+      value: '₹2.5L',
+      subtitle: 'Invested',
+    },
+    {
+      title: 'Success Rate',
+      value: '78%',
+      color: colors.primary,
+      subtitle: 'Allotment',
+    },
+    {
+      title: 'Upcoming',
+      value: '5',
+      color: colors.warning,
+      subtitle: 'This Week',
+    },
+  ];
+
+  // Get user's first name for greeting
+  const getUserName = () => {
+    if (user?.displayName) {
+      return user.displayName.split(' ')[0];
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Discover</Text>
+        <View style={styles.headerLeft}>
+          <Animated.View style={{ transform: [{ scale: logoScale }] }}>
+            <Image
+              source={require('../../assets/images/Wealth.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </Animated.View>
+          <Text style={styles.title}>Hey {getUserName()}!</Text>
+        </View>
+        <TouchableOpacity style={styles.headerButton}>
+          <Ionicons name="notifications-outline" size={24} color={colors.text} />
+        </TouchableOpacity>
       </View>
+
+      {/* Top Indices Carousel */}
+      <TopIndicesCarousel />
+
+      {/* Universal Carousel */}
+      <UniversalCarousel items={carouselItems} />
 
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -95,6 +193,19 @@ export default function BidsScreen() {
             ]}
           >
             G-Secs
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'MUTUAL_FUNDS' && styles.activeTab]}
+          onPress={() => setActiveTab('MUTUAL_FUNDS')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'MUTUAL_FUNDS' && styles.activeTabText,
+            ]}
+          >
+            Mutual Funds
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -126,6 +237,14 @@ export default function BidsScreen() {
           <Ionicons name="trending-up-outline" size={64} color="#666" />
           <Text style={styles.emptyText}>Government Securities</Text>
           <Text style={styles.emptySubtext}>Coming soon in paper trading mode</Text>
+        </View>
+      )}
+
+      {activeTab === 'MUTUAL_FUNDS' && (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="pie-chart-outline" size={64} color="#666" />
+          <Text style={styles.emptyText}>Mutual Funds</Text>
+          <Text style={styles.emptySubtext}>SIP and lump sum investments</Text>
         </View>
       )}
 
@@ -239,26 +358,60 @@ function IPOCard({ ipo }: { ipo: IPO }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: '#0A0A0A',
+    paddingTop: Platform.OS === 'ios' ? 55 : 45,
+    paddingBottom: 12,
+    backgroundColor: colors.backgroundSecondary,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+    }),
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  logo: {
+    width: Platform.OS === 'ios' ? 48 : 44,
+    height: Platform.OS === 'ios' ? 48 : 44,
+    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+    }),
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: Platform.OS === 'ios' ? 24 : 22,
+    fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
+    color: colors.text,
+    ...(Platform.OS === 'ios' && {
+      letterSpacing: 0.5,
+      textShadowColor: 'rgba(255, 255, 255, 0.1)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    }),
+  },
+  headerButton: {
+    padding: 6,
   },
   tabs: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: colors.backgroundSecondary,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A1A',
+    borderBottomColor: colors.card,
   },
   tab: {
     flex: 1,
@@ -268,18 +421,19 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: '#2962FF',
+    borderBottomColor: colors.primary,
   },
   tabText: {
-    color: '#999',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: 12,
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#2962FF',
+    color: colors.primary,
   },
   listContent: {
     padding: 16,
+    paddingBottom: 100,
   },
   emptyContainer: {
     flex: 1,
@@ -288,21 +442,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyText: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtext: {
-    color: '#666',
+    color: colors.textMuted,
     fontSize: 14,
     marginTop: 8,
   },
   ipoCard: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   ipoHeader: {
     flexDirection: 'row',
@@ -313,12 +469,12 @@ const styles = StyleSheet.create({
   ipoName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
     marginBottom: 4,
   },
   ipoSymbol: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textMuted,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -326,14 +482,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   ipoDetails: {
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: colors.border,
     paddingTop: 12,
   },
   ipoRow: {
@@ -343,33 +499,36 @@ const styles = StyleSheet.create({
   },
   ipoLabel: {
     fontSize: 14,
-    color: '#999',
+    color: colors.textSecondary,
   },
   ipoValue: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: colors.text,
     fontWeight: '600',
   },
   bidButton: {
-    backgroundColor: '#2962FF',
+    backgroundColor: colors.primary,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 12,
   },
   bidButtonText: {
-    color: '#FFFFFF',
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600',
   },
   newsContainer: {
     padding: 16,
+    paddingBottom: 100,
   },
   newsCard: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   newsHeader: {
     flexDirection: 'row',
@@ -379,18 +538,18 @@ const styles = StyleSheet.create({
   },
   newsSource: {
     fontSize: 12,
-    color: '#2962FF',
+    color: colors.primary,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   newsDate: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textMuted,
   },
   newsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: colors.text,
     marginBottom: 12,
     lineHeight: 24,
   },
@@ -406,7 +565,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   readMoreText: {
-    color: '#2962FF',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,

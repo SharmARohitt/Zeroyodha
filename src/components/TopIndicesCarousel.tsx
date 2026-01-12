@@ -11,8 +11,19 @@ import { useMarketStore } from '../store/useMarketStore';
 import { formatCurrency, formatPercent } from '../utils/formatters';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.45; // Much smaller cards
+const CARD_WIDTH = width * 0.32;
 const CARD_SPACING = 8;
+
+// Theme colors
+const colors = {
+  primary: '#00D4FF', // Blue Neon
+  profit: '#00C853',
+  loss: '#FF5252',
+  background: '#0A0A0A',
+  card: '#1A1A1A',
+  border: '#2A2A2A',
+  text: '#FFFFFF',
+};
 
 export default function TopIndicesCarousel() {
   const { stocks } = useMarketStore();
@@ -46,7 +57,7 @@ export default function TopIndicesCarousel() {
         {indices.map((index) => {
           if (!index) return null;
           const isPositive = index.change >= 0;
-          const changeColor = isPositive ? '#00C853' : '#FF5252';
+          const changeColor = isPositive ? colors.profit : colors.loss;
 
           return (
             <TouchableOpacity
@@ -55,25 +66,16 @@ export default function TopIndicesCarousel() {
               activeOpacity={0.9}
             >
               <View style={styles.cardHeader}>
-                <Text style={styles.indexName}>{index.name}</Text>
-                <View style={[styles.badge, { backgroundColor: changeColor + '20' }]}>
-                  <Text style={[styles.badgeText, { color: changeColor }]}>
-                    {index.instrumentType}
-                  </Text>
-                </View>
+                <Text style={styles.indexName} numberOfLines={1}>{index.name}</Text>
               </View>
               
               <View style={styles.cardBody}>
                 <Text style={styles.indexValue}>
                   {formatCurrency(index.lastPrice)}
                 </Text>
-                <View style={styles.changeRow}>
+                <View style={[styles.changeContainer, { backgroundColor: changeColor + '15' }]}>
                   <Text style={[styles.changeText, { color: changeColor }]}>
-                    {isPositive ? '+' : ''}
-                    {formatCurrency(index.change)}
-                  </Text>
-                  <Text style={[styles.changePercent, { color: changeColor }]}>
-                    ({formatPercent(index.changePercent)})
+                    {isPositive ? '▲' : '▼'} {formatPercent(Math.abs(index.changePercent))}
                   </Text>
                 </View>
               </View>
@@ -87,66 +89,46 @@ export default function TopIndicesCarousel() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#0A0A0A',
-    paddingVertical: 10,
-    paddingTop: 12,
+    backgroundColor: colors.background,
+    paddingVertical: 8,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingRight: 4,
   },
   card: {
     width: CARD_WIDTH,
-    backgroundColor: '#1A1A1A',
-    borderRadius: 8,
+    backgroundColor: colors.card,
+    borderRadius: 10,
     padding: 10,
     marginRight: CARD_SPACING,
-    borderWidth: 0.5,
-    borderColor: '#2A2A2A',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 6,
   },
   indexName: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#999',
   },
-  badge: {
+  cardBody: {
+    gap: 4,
+  },
+  indexValue: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  changeContainer: {
+    alignSelf: 'flex-start',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  badgeText: {
-    fontSize: 8,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  cardBody: {
-    marginTop: 2,
-  },
-  indexValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  changeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    flexWrap: 'wrap',
-  },
   changeText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  changePercent: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
   },
 });
 

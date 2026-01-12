@@ -1,12 +1,51 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { TouchableOpacity, StyleSheet, Platform, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMarketStore } from '../store/useMarketStore';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function FloatingTradeButton() {
   const router = useRouter();
   const { selectedSymbol } = useMarketStore();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0.6)).current;
+
+  useEffect(() => {
+    // Continuous glow animation for iOS
+    if (Platform.OS === 'ios') {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0.6,
+            duration: 2000,
+            useNativeDriver: false,
+          }),
+        ])
+      ).start();
+    }
+  }, []);
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      tension: 300,
+      friction: 10,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const handlePress = () => {
     if (selectedSymbol) {
@@ -20,33 +59,76 @@ export default function FloatingTradeButton() {
   };
 
   return (
-    <TouchableOpacity 
-      style={styles.button} 
-      onPress={handlePress} 
-      activeOpacity={0.8}
-    >
-      <Ionicons name="trending-up" size={24} color="#FFFFFF" />
-    </TouchableOpacity>
+    <Animated.View style={[
+      styles.container,
+      {
+        transform: [{ scale: scaleAnim }],
+        ...(Platform.OS === 'ios' && {
+          shadowOpacity: glowAnim,
+        }),
+      }
+    ]}>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={handlePress} 
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.85}
+      >
+        <LinearGradient
+          colors={['#00D4FF', '#0099CC', '#006699']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        >
+          <Ionicons 
+            name="trending-up" 
+            size={Platform.OS === 'ios' ? 28 : 26} 
+            color="#FFFFFF" 
+            style={Platform.OS === 'ios' ? styles.iconShadow : {}}
+          />
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  container: {
     position: 'absolute',
-    bottom: 75, // Closer to bottom navigation (typical tab bar is ~60-70px)
+    bottom: Platform.OS === 'ios' ? 110 : 95,
     right: 20,
-    backgroundColor: '#2962FF',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: Platform.OS === 'ios' ? 64 : 58,
+    height: Platform.OS === 'ios' ? 64 : 58,
+    borderRadius: Platform.OS === 'ios' ? 32 : 29,
+    elevation: 10,
+    shadowColor: '#00D4FF',
+    shadowOffset: { width: 0, height: Platform.OS === 'ios' ? 8 : 4 },
+    shadowOpacity: Platform.OS === 'ios' ? 0.8 : 0.6,
+    shadowRadius: Platform.OS === 'ios' ? 20 : 12,
+    zIndex: 1000,
+  },
+  button: {
+    width: '100%',
+    height: '100%',
+    borderRadius: Platform.OS === 'ios' ? 32 : 29,
+  },
+  gradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: Platform.OS === 'ios' ? 32 : 29,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#2962FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    zIndex: 1000,
+    ...(Platform.OS === 'ios' && {
+      borderWidth: 1,
+      borderColor: 'rgba(0, 212, 255, 0.3)',
+    }),
+  },
+  iconShadow: {
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
 });
 

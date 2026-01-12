@@ -1,6 +1,15 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
+
+// Theme colors
+const colors = {
+  primary: '#00D4FF', // Blue Neon
+  background: '#0A0A0A',
+  border: '#1A1A1A',
+  inactive: '#666666',
+};
 
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
@@ -10,12 +19,37 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2962FF',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.inactive,
         tabBarStyle: {
-          backgroundColor: '#0A0A0A',
-          borderTopColor: '#1A1A1A',
-          borderTopWidth: 1,
+          backgroundColor: Platform.OS === 'ios' ? 'rgba(10, 10, 10, 0.95)' : colors.background,
+          borderTopColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.3)' : colors.border,
+          borderTopWidth: Platform.OS === 'ios' ? 0.5 : 1,
+          height: Platform.OS === 'ios' ? 95 : 75,
+          paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+          paddingTop: Platform.OS === 'ios' ? 8 : 12,
+          elevation: 0,
+          shadowOpacity: Platform.OS === 'ios' ? 0.3 : 0,
+          shadowColor: Platform.OS === 'ios' ? colors.primary : '#000',
+          shadowOffset: { width: 0, height: Platform.OS === 'ios' ? -4 : -2 },
+          shadowRadius: Platform.OS === 'ios' ? 16 : 8,
+          position: 'absolute',
+          bottom: 0,
+          ...(Platform.OS === 'ios' && {
+            backdropFilter: 'blur(20px)',
+          }),
+        },
+        tabBarLabelStyle: {
+          fontSize: Platform.OS === 'ios' ? 12 : 11,
+          fontWeight: Platform.OS === 'ios' ? '800' : '600',
+          marginTop: Platform.OS === 'ios' ? 4 : 2,
+          letterSpacing: Platform.OS === 'ios' ? 0.5 : 0,
+        },
+        tabBarIconStyle: {
+          marginBottom: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: Platform.OS === 'ios' ? 4 : 0,
         },
       }}
     >
@@ -23,8 +57,18 @@ export default function TabsLayout() {
         name="watchlist"
         options={{
           title: 'Watchlist',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bookmark" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "bookmark" : "bookmark-outline"} 
+              size={Platform.OS === 'ios' ? 24 : 22} 
+              color={color}
+              style={Platform.OS === 'ios' && focused ? { 
+                shadowColor: color, 
+                shadowOffset: { width: 0, height: 0 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 8 
+              } : {}}
+            />
           ),
         }}
       />
@@ -32,8 +76,18 @@ export default function TabsLayout() {
         name="orders"
         options={{
           title: 'Orders',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="document-text" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "document-text" : "document-text-outline"} 
+              size={Platform.OS === 'ios' ? 24 : 22} 
+              color={color}
+              style={Platform.OS === 'ios' && focused ? { 
+                shadowColor: color, 
+                shadowOffset: { width: 0, height: 0 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 8 
+              } : {}}
+            />
           ),
         }}
       />
@@ -41,8 +95,18 @@ export default function TabsLayout() {
         name="portfolio"
         options={{
           title: 'Portfolio',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="briefcase" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "briefcase" : "briefcase-outline"} 
+              size={Platform.OS === 'ios' ? 24 : 22} 
+              color={color}
+              style={Platform.OS === 'ios' && focused ? { 
+                shadowColor: color, 
+                shadowOffset: { width: 0, height: 0 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 8 
+              } : {}}
+            />
           ),
         }}
       />
@@ -50,8 +114,18 @@ export default function TabsLayout() {
         name="bids"
         options={{
           title: 'Bids',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="hammer" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "hammer" : "hammer-outline"} 
+              size={Platform.OS === 'ios' ? 24 : 22} 
+              color={color}
+              style={Platform.OS === 'ios' && focused ? { 
+                shadowColor: color, 
+                shadowOffset: { width: 0, height: 0 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 8 
+              } : {}}
+            />
           ),
         }}
       />
@@ -59,8 +133,18 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons 
+              name={focused ? "person" : "person-outline"} 
+              size={Platform.OS === 'ios' ? 24 : 22} 
+              color={color}
+              style={Platform.OS === 'ios' && focused ? { 
+                shadowColor: color, 
+                shadowOffset: { width: 0, height: 0 }, 
+                shadowOpacity: 0.8, 
+                shadowRadius: 8 
+              } : {}}
+            />
           ),
         }}
       />
