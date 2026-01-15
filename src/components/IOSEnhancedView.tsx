@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Animated, Platform, ViewStyle } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { iosEnhancements } from '../utils/iosEnhancements';
 
 interface IOSEnhancedViewProps {
@@ -8,8 +7,6 @@ interface IOSEnhancedViewProps {
   style?: ViewStyle;
   animated?: boolean;
   animationType?: 'pulse' | 'glow' | 'none';
-  blur?: boolean;
-  blurIntensity?: number;
   shadow?: boolean;
   shadowColor?: string;
   shadowOpacity?: number;
@@ -24,8 +21,6 @@ export default function IOSEnhancedView({
   style,
   animated = false,
   animationType = 'pulse',
-  blur = false,
-  blurIntensity = 20,
   shadow = false,
   shadowColor = '#00D4FF',
   shadowOpacity = 0.3,
@@ -38,7 +33,7 @@ export default function IOSEnhancedView({
 
   useEffect(() => {
     if (Platform.OS === 'ios' && animated) {
-      let animation: Animated.CompositeAnimation;
+      let animation: Animated.CompositeAnimation | undefined;
 
       if (animationType === 'pulse') {
         animation = iosEnhancements.createPulseAnimation(animatedValue);
@@ -68,18 +63,6 @@ export default function IOSEnhancedView({
     transform: animationType === 'pulse' ? [{ scale: animatedValue }] : [],
     opacity: animationType === 'glow' ? animatedValue : 1,
   } : {};
-
-  if (Platform.OS === 'ios' && blur) {
-    return (
-      <Animated.View style={[enhancedStyle, animatedStyle]}>
-        <BlurView intensity={blurIntensity} style={{ flex: 1, borderRadius: enhancedStyle.borderRadius }}>
-          <View style={{ flex: 1, padding: enhancedStyle.padding }}>
-            {children}
-          </View>
-        </BlurView>
-      </Animated.View>
-    );
-  }
 
   if (animated && Platform.OS === 'ios') {
     return (

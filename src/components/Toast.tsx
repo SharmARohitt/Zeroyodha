@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 
 const { width } = Dimensions.get('window');
 
@@ -117,18 +116,6 @@ export default function Toast({ message, type, visible, onHide, duration = 3000 
 
   if (!visible) return null;
 
-  const ToastContent = () => (
-    <>
-      <Ionicons 
-        name={getIcon()} 
-        size={Platform.OS === 'ios' ? 26 : 24} 
-        color="#FFFFFF" 
-        style={Platform.OS === 'ios' ? styles.iconShadow : {}}
-      />
-      <Text style={styles.message}>{message}</Text>
-    </>
-  );
-
   return (
     <Animated.View
       style={[
@@ -140,15 +127,13 @@ export default function Toast({ message, type, visible, onHide, duration = 3000 
         },
       ]}
     >
-      {Platform.OS === 'ios' ? (
-        <BlurView intensity={20} style={styles.blurContainer}>
-          <View style={[styles.contentContainer, getToastStyle()]}>
-            <ToastContent />
-          </View>
-        </BlurView>
-      ) : (
-        <ToastContent />
-      )}
+      <Ionicons 
+        name={getIcon()} 
+        size={Platform.OS === 'ios' ? 26 : 24} 
+        color="#FFFFFF" 
+        style={Platform.OS === 'ios' ? styles.iconShadow : {}}
+      />
+      <Text style={styles.message}>{message}</Text>
     </Animated.View>
   );
 }
@@ -171,19 +156,6 @@ const styles = StyleSheet.create({
     shadowOpacity: Platform.OS === 'ios' ? 0.4 : 0.3,
     shadowRadius: Platform.OS === 'ios' ? 8 : 4,
     elevation: 8,
-    overflow: 'hidden',
-  },
-  blurContainer: {
-    flex: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  contentContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
   },
   message: {
     color: '#FFFFFF',

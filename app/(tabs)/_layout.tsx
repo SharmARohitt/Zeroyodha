@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
 
 // Theme colors
 const colors = {

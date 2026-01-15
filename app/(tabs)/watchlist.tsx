@@ -186,7 +186,7 @@ export default function WatchlistScreen() {
           <TouchableOpacity 
             style={styles.headerButton} 
             onPress={handleAddStock}
-            activeOpacity={0.7}
+            activeOpacity={1.9}
           >
             <Ionicons 
               name="add-circle-outline" 
