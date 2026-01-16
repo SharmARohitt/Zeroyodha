@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Stock, MarketData, Watchlist } from '../types';
 import { marketDataService } from '../services/marketDataService';
+import { preloadStockLogos } from '../utils/stockLogos';
 
 interface MarketState {
   stocks: Record<string, Stock>;
@@ -106,6 +107,12 @@ export const useMarketStore = create<MarketState>((set, get) => ({
     stocks.forEach((stock) => {
       stocksMap[stock.symbol] = stock;
     });
+    
+    // Preload stock logos from Benzinga in background
+    const stockSymbols = stocks.map(s => s.symbol);
+    preloadStockLogos(stockSymbols).catch(err => 
+      console.warn('Failed to preload logos:', err)
+    );
     
     // Initialize multiple default watchlists
     const existingWatchlists = get().watchlists;

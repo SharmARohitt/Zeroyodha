@@ -22,6 +22,7 @@ import FloatingTradeButton from '../../src/components/FloatingTradeButton';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import WatchlistTabs from '../../src/components/WatchlistTabs';
 import Toast from '../../src/components/Toast';
+import NotificationsModal from '../../src/components/NotificationsModal';
 import { notificationService } from '../../src/services/notificationService';
 
 // Theme colors
@@ -51,6 +52,8 @@ export default function WatchlistScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ visible: false, message: '', type: 'success' });
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [alerts, setAlerts] = useState(notificationService.getAlerts());
   const headerOpacity = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
 
@@ -58,7 +61,8 @@ export default function WatchlistScreen() {
     initializeMarketData();
     
     // Subscribe to notifications
-    const unsubscribe = notificationService.subscribe(() => {
+    const unsubscribe = notificationService.subscribe((updatedAlerts) => {
+      setAlerts(updatedAlerts);
       setUnreadNotifications(notificationService.getUnreadCount());
     });
 
@@ -126,8 +130,15 @@ export default function WatchlistScreen() {
   };
 
   const handleNotificationPress = () => {
-    // Navigate to notifications screen or show notifications modal
-    console.log('Show notifications');
+    setNotificationsVisible(true);
+  };
+
+  const handleMarkAsRead = (alertId: string) => {
+    notificationService.markAsRead(alertId);
+  };
+
+  const handleMarkAllAsRead = () => {
+    notificationService.markAllAsRead();
   };
 
   const hideToast = () => {
@@ -152,6 +163,14 @@ export default function WatchlistScreen() {
         message={toast.message}
         type={toast.type}
         onHide={hideToast}
+      />
+      
+      <NotificationsModal
+        visible={notificationsVisible}
+        onClose={() => setNotificationsVisible(false)}
+        alerts={alerts}
+        onMarkAsRead={handleMarkAsRead}
+        onMarkAllAsRead={handleMarkAllAsRead}
       />
       
       {/* Header with Logo */}
@@ -297,9 +316,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: Platform.OS === 'ios' ? 48 : 44,
-    height: Platform.OS === 'ios' ? 48 : 44,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    width: Platform.OS === 'ios' ? 56 : 52,
+    height: Platform.OS === 'ios' ? 56 : 52,
+    borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },

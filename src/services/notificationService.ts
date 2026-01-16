@@ -2,41 +2,45 @@
 export interface StockAlert {
   id: string;
   symbol: string;
-  type: 'price_increase' | 'price_decrease' | 'volume_spike' | 'news_alert';
+  type: 'price_increase' | 'price_decrease' | 'volume_spike' | 'news_alert' | 'urgent_news';
   message: string;
   timestamp: Date;
   read: boolean;
+  urgent?: boolean;
 }
 
 class NotificationService {
   private alerts: StockAlert[] = [];
   private listeners: ((alerts: StockAlert[]) => void)[] = [];
 
-  // Mock alerts for demonstration
+  // Mock alerts for demonstration - Only urgent news
   private mockAlerts: StockAlert[] = [
     {
       id: '1',
-      symbol: 'RELIANCE',
-      type: 'price_increase',
-      message: 'RELIANCE is up 5.2% today! Your investment is performing well.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+      symbol: 'MARKET',
+      type: 'urgent_news',
+      message: '🚨 SEBI announces new trading regulations effective from next month',
+      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
       read: false,
+      urgent: true,
     },
     {
       id: '2',
-      symbol: 'TCS',
-      type: 'volume_spike',
-      message: 'TCS showing unusual volume activity. Consider reviewing your position.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+      symbol: 'NIFTY',
+      type: 'urgent_news',
+      message: '⚠️ Market volatility expected due to global economic concerns',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
       read: false,
+      urgent: true,
     },
     {
       id: '3',
-      symbol: 'INFY',
-      type: 'news_alert',
-      message: 'INFY announces new AI partnership. Stock may see positive movement.',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
+      symbol: 'RELIANCE',
+      type: 'urgent_news',
+      message: '📢 Reliance Industries announces major acquisition deal',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
       read: true,
+      urgent: true,
     },
   ];
 
@@ -72,6 +76,7 @@ class NotificationService {
       id: Date.now().toString(),
       timestamp: new Date(),
       read: false,
+      urgent: alert.urgent || false,
     };
     this.alerts.unshift(newAlert);
     this.notifyListeners();
@@ -88,29 +93,29 @@ class NotificationService {
     this.listeners.forEach(listener => listener(this.getAlerts()));
   }
 
-  // Simulate real-time alerts
+  // Simulate real-time alerts - Only urgent news
   startMockAlerts(): void {
     setInterval(() => {
-      if (Math.random() > 0.7) { // 30% chance every interval
-        const symbols = ['RELIANCE', 'TCS', 'INFY', 'HDFC', 'ICICI'];
-        const types: StockAlert['type'][] = ['price_increase', 'price_decrease', 'volume_spike', 'news_alert'];
-        const messages = {
-          price_increase: 'is showing strong upward momentum!',
-          price_decrease: 'has dropped significantly. Monitor closely.',
-          volume_spike: 'showing unusual trading volume.',
-          news_alert: 'has important news updates.',
-        };
+      if (Math.random() > 0.8) { // 20% chance every interval
+        const urgentNews = [
+          '🚨 Breaking: RBI announces policy rate change',
+          '⚠️ Market Alert: Circuit breaker triggered on NSE',
+          '📢 Urgent: Major IPO oversubscribed 50x',
+          '🔔 Alert: FII selling crosses ₹5000 crore',
+          '⚡ Breaking: Government announces new tax reforms',
+          '🚨 Market Update: Sensex crosses new milestone',
+        ];
 
-        const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-        const randomType = types[Math.floor(Math.random() * types.length)];
+        const randomNews = urgentNews[Math.floor(Math.random() * urgentNews.length)];
         
         this.addAlert({
-          symbol: randomSymbol,
-          type: randomType,
-          message: `${randomSymbol} ${messages[randomType]}`,
+          symbol: 'MARKET',
+          type: 'urgent_news',
+          message: randomNews,
+          urgent: true,
         });
       }
-    }, 30000); // Every 30 seconds
+    }, 60000); // Every 60 seconds
   }
 }
 

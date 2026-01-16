@@ -18,7 +18,6 @@ import { Position, Holding } from '../../src/types';
 import { Ionicons } from '@expo/vector-icons';
 import PositionCard from '../../src/components/PositionCard';
 import HoldingCard from '../../src/components/HoldingCard';
-import UniversalCarousel from '../../src/components/UniversalCarousel';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 
 // Theme colors
@@ -97,32 +96,6 @@ export default function PortfolioScreen() {
     setRefreshing(false);
   };
 
-  const carouselItems = [
-    {
-      title: 'Day Change',
-      value: `${dayChange >= 0 ? '+' : ''}₹${dayChange.toFixed(0)}`,
-      color: dayChange >= 0 ? '#00C853' : '#FF5252',
-      subtitle: `${dayChangePercent.toFixed(2)}%`,
-    },
-    {
-      title: 'Available',
-      value: `₹${funds.available.toLocaleString('en-IN')}`,
-      subtitle: 'Cash Balance',
-    },
-    {
-      title: 'Holdings',
-      value: holdings.length.toString(),
-      color: colors.primary,
-      subtitle: 'Active',
-    },
-    {
-      title: 'Positions',
-      value: positions.length.toString(),
-      color: colors.profit,
-      subtitle: 'Open',
-    },
-  ];
-
   // Get user's first name for greeting
   const getUserName = () => {
     if (user?.displayName) {
@@ -163,9 +136,6 @@ export default function PortfolioScreen() {
 
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
-
-      {/* Universal Carousel */}
-      <UniversalCarousel items={carouselItems} />
 
       {/* Enhanced Summary */}
       <View style={styles.summaryContainer}>
@@ -291,9 +261,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: Platform.OS === 'ios' ? 48 : 44,
-    height: Platform.OS === 'ios' ? 48 : 44,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    width: Platform.OS === 'ios' ? 56 : 52,
+    height: Platform.OS === 'ios' ? 56 : 52,
+    borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },

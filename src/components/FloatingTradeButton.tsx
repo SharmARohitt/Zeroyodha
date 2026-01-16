@@ -83,7 +83,7 @@ export default function FloatingTradeButton() {
         >
           <Ionicons 
             name="trending-up" 
-            size={Platform.OS === 'ios' ? 28 : 26} 
+            size={Platform.OS === 'ios' ? 24 : 25} 
             color="#FFFFFF" 
             style={Platform.OS === 'ios' ? styles.iconShadow : {}}
           />
@@ -96,11 +96,11 @@ export default function FloatingTradeButton() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 110 : 95,
-    right: 20,
-    width: Platform.OS === 'ios' ? 64 : 58,
-    height: Platform.OS === 'ios' ? 64 : 58,
-    borderRadius: Platform.OS === 'ios' ? 32 : 29,
+    bottom: Platform.OS === 'ios' ? 100 : 85,
+    right: 16,
+    width: Platform.OS === 'ios' ? 52 : 48,
+    height: Platform.OS === 'ios' ? 52 : 48,
+    borderRadius: Platform.OS === 'ios' ? 26 : 24,
     elevation: 10,
     shadowColor: '#00D4FF',
     shadowOffset: { width: 0, height: Platform.OS === 'ios' ? 8 : 4 },
@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: '100%',
-    borderRadius: Platform.OS === 'ios' ? 32 : 29,
+    borderRadius: Platform.OS === 'ios' ? 26 : 24,
   },
   gradient: {
     width: '100%',
     height: '100%',
-    borderRadius: Platform.OS === 'ios' ? 32 : 29,
+    borderRadius: Platform.OS === 'ios' ? 26 : 24,
     alignItems: 'center',
     justifyContent: 'center',
     ...(Platform.OS === 'ios' && {

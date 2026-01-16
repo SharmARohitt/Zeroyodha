@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Stock } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getStockLogo } from '../utils/stockLogos';
+import { benzingaService } from '../services/benzingaService';
 
 interface StockCardProps {
   stock: Stock;
@@ -11,6 +13,28 @@ interface StockCardProps {
 export default function StockCard({ stock, onPress }: StockCardProps) {
   const isPositive = stock.change >= 0;
   const changeColor = isPositive ? '#00C853' : '#FF5252';
+  const [logoInfo, setLogoInfo] = useState(getStockLogo(stock.symbol));
+
+  // Try to fetch real logo from Benzinga if not cached
+  useEffect(() => {
+    const fetchLogo = async () => {
+      if (!logoInfo.imageUrl) {
+        try {
+          const realLogo = await benzingaService.getStockLogo(stock.symbol);
+          if (realLogo) {
+            setLogoInfo(prev => ({
+              ...prev,
+              imageUrl: realLogo,
+            }));
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch logo for ${stock.symbol}:`, error);
+        }
+      }
+    };
+
+    fetchLogo();
+  }, [stock.symbol, logoInfo.imageUrl]);
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
@@ -21,10 +45,22 @@ export default function StockCard({ stock, onPress }: StockCardProps) {
         >
           <View style={styles.content}>
             <View style={styles.leftSection}>
-              <View style={styles.logoContainer}>
-                <Text style={styles.logoText}>
-                  {stock.symbol.substring(0, 2).toUpperCase()}
-                </Text>
+              <View style={[styles.logoContainer, { backgroundColor: logoInfo.imageUrl ? '#FFFFFF' : logoInfo.color }]}>
+                {logoInfo.imageUrl ? (
+                  <Image
+                    source={{ uri: logoInfo.imageUrl }}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                    onError={() => {
+                      // If image fails to load, fallback to text
+                      setLogoInfo(prev => ({ ...prev, imageUrl: undefined }));
+                    }}
+                  />
+                ) : (
+                  <Text style={styles.logoText}>
+                    {stock.symbol.substring(0, 2).toUpperCase()}
+                  </Text>
+                )}
               </View>
               <View style={styles.info}>
                 <Text style={styles.symbol}>{stock.symbol}</Text>
@@ -85,6 +121,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: 40,
+    height: 40,
   },
   logoText: {
     color: '#FFFFFF',

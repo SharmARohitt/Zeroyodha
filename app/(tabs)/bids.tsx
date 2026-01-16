@@ -16,7 +16,7 @@ import { IPO } from '../../src/types';
 import { format } from 'date-fns';
 import { newsService, NewsArticle } from '../../src/services/newsService';
 import { useAuthStore } from '../../src/store/useAuthStore';
-import UniversalCarousel from '../../src/components/UniversalCarousel';
+import { useRouter } from 'expo-router';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 
 // Theme colors
@@ -63,6 +63,7 @@ const mockIPOs: IPO[] = [
 ];
 
 export default function BidsScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'IPOS' | 'GSEC' | 'MUTUAL_FUNDS' | 'NEWS'>('IPOS');
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -107,31 +108,17 @@ export default function BidsScreen() {
     }
   };
 
-  const carouselItems = [
-    {
-      title: 'Active IPOs',
-      value: '12',
-      color: colors.profit,
-      subtitle: 'Open Now',
-    },
-    {
-      title: 'Total Bids',
-      value: '₹2.5L',
-      subtitle: 'Invested',
-    },
-    {
-      title: 'Success Rate',
-      value: '78%',
-      color: colors.primary,
-      subtitle: 'Allotment',
-    },
-    {
-      title: 'Upcoming',
-      value: '5',
-      color: colors.warning,
-      subtitle: 'This Week',
-    },
-  ];
+  const handleIPOPress = (ipo: IPO) => {
+    // Navigate to IPO bid placement screen
+    router.push({
+      pathname: '/ipo-bid',
+      params: { 
+        ipoId: ipo.id,
+        ipoName: ipo.name,
+        symbol: ipo.symbol,
+      },
+    });
+  };
 
   // Get user's first name for greeting
   const getUserName = () => {
@@ -164,9 +151,6 @@ export default function BidsScreen() {
 
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
-
-      {/* Universal Carousel */}
-      <UniversalCarousel items={carouselItems} />
 
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -227,7 +211,7 @@ export default function BidsScreen() {
         <FlatList
           data={mockIPOs}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <IPOCard ipo={item} />}
+          renderItem={({ item }) => <IPOCard ipo={item} onPress={() => handleIPOPress(item)} />}
           contentContainerStyle={styles.listContent}
         />
       )}
@@ -300,7 +284,7 @@ export default function BidsScreen() {
   );
 }
 
-function IPOCard({ ipo }: { ipo: IPO }) {
+function IPOCard({ ipo, onPress }: { ipo: IPO; onPress: () => void }) {
   const statusColors: Record<string, string> = {
     UPCOMING: '#FFC107',
     OPEN: '#00C853',
@@ -309,7 +293,11 @@ function IPOCard({ ipo }: { ipo: IPO }) {
   };
 
   return (
-    <View style={styles.ipoCard}>
+    <TouchableOpacity 
+      style={styles.ipoCard}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.ipoHeader}>
         <View>
           <Text style={styles.ipoName}>{ipo.name}</Text>
@@ -346,12 +334,13 @@ function IPOCard({ ipo }: { ipo: IPO }) {
           </Text>
         </View>
         {ipo.status === 'OPEN' && (
-          <TouchableOpacity style={styles.bidButton}>
-            <Text style={styles.bidButtonText}>Place Bid</Text>
-          </TouchableOpacity>
+          <View style={styles.bidButtonContainer}>
+            <Ionicons name="arrow-forward-circle" size={24} color={colors.primary} />
+            <Text style={styles.bidButtonText}>Tap to Place Bid</Text>
+          </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -381,9 +370,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: Platform.OS === 'ios' ? 48 : 44,
-    height: Platform.OS === 'ios' ? 48 : 44,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    width: Platform.OS === 'ios' ? 56 : 52,
+    height: Platform.OS === 'ios' ? 56 : 52,
+    borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },
@@ -506,16 +495,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: '600',
   },
-  bidButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
+  bidButtonContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
     marginTop: 12,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   bidButtonText: {
-    color: colors.text,
-    fontSize: 16,
+    color: colors.primary,
+    fontSize: 14,
     fontWeight: '600',
   },
   newsContainer: {

@@ -9,10 +9,11 @@ import {
 } from 'react-native';
 import { useMarketStore } from '../store/useMarketStore';
 import { formatCurrency, formatPercent } from '../utils/formatters';
+import { getStockLogo } from '../utils/stockLogos';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.32;
-const CARD_SPACING = 8;
+const CARD_WIDTH = width * 0.28; // Smaller cards
+const CARD_SPACING = 6;
 
 // Theme colors
 const colors = {
@@ -58,6 +59,7 @@ export default function TopIndicesCarousel() {
           if (!index) return null;
           const isPositive = index.change >= 0;
           const changeColor = isPositive ? colors.profit : colors.loss;
+          const logoInfo = getStockLogo(index.symbol);
 
           return (
             <TouchableOpacity
@@ -90,44 +92,45 @@ export default function TopIndicesCarousel() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background,
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   card: {
     width: CARD_WIDTH,
     backgroundColor: colors.card,
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 8,
+    padding: 8,
     marginRight: CARD_SPACING,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: colors.border,
   },
   cardHeader: {
-    marginBottom: 6,
+    marginBottom: 4,
   },
   indexName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     color: '#999',
+    textTransform: 'uppercase',
   },
   cardBody: {
-    gap: 4,
+    gap: 3,
   },
   indexValue: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: 'bold',
     color: colors.text,
   },
   changeContainer: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
   },
   changeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
   },
 });

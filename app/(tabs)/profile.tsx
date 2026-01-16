@@ -14,7 +14,6 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useTradingStore } from '../../src/store/useTradingStore';
 import { Ionicons } from '@expo/vector-icons';
-import UniversalCarousel from '../../src/components/UniversalCarousel';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 
 // Theme colors
@@ -123,34 +122,6 @@ export default function ProfileScreen() {
   // Calculate profile statistics
   const totalHoldings = holdings.length;
   const totalPositions = positions.length;
-  const accountAge = '2 months'; // This would be calculated from user creation date
-  const totalTrades = 45; // This would come from trade history
-
-  const carouselItems = [
-    {
-      title: 'Positions',
-      value: totalPositions.toString(),
-      color: colors.primary,
-      subtitle: 'Open',
-    },
-    {
-      title: 'Total Trades',
-      value: totalTrades.toString(),
-      subtitle: 'All time',
-    },
-    {
-      title: 'Success Rate',
-      value: '78%',
-      color: colors.profit,
-      subtitle: 'Profitable',
-    },
-    {
-      title: 'Trading Mode',
-      value: mode === 'PAPER' ? 'Paper' : 'Live',
-      color: mode === 'PAPER' ? colors.primary : colors.profit,
-      subtitle: 'Current',
-    },
-  ];
 
   // Get user's first name for greeting
   const getUserName = () => {
@@ -198,9 +169,6 @@ export default function ProfileScreen() {
 
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
-
-      {/* Universal Carousel */}
-      <UniversalCarousel items={carouselItems} />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Trading</Text>
@@ -328,9 +296,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: Platform.OS === 'ios' ? 48 : 44,
-    height: Platform.OS === 'ios' ? 48 : 44,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    width: Platform.OS === 'ios' ? 56 : 52,
+    height: Platform.OS === 'ios' ? 56 : 52,
+    borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },

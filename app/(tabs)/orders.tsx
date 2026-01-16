@@ -14,7 +14,6 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { Order, OrderStatus } from '../../src/types';
 import { Ionicons } from '@expo/vector-icons';
 import OrderCard from '../../src/components/OrderCard';
-import UniversalCarousel from '../../src/components/UniversalCarousel';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 
 // Theme colors
@@ -31,18 +30,18 @@ const colors = {
   textMuted: '#666666',
 };
 
-const orderTabs: { key: OrderStatus | 'ALL'; label: string }[] = [
+const orderTabs: { key: OrderStatus | 'ALL' | 'GTT' | 'BASKETS'; label: string }[] = [
   { key: 'ALL', label: 'All' },
   { key: 'OPEN', label: 'Open' },
   { key: 'EXECUTED', label: 'Executed' },
-  { key: 'CANCELLED', label: 'Cancelled' },
-  { key: 'REJECTED', label: 'Rejected' },
+  { key: 'GTT', label: 'GTT' },
+  { key: 'BASKETS', label: 'Baskets' },
 ];
 
 export default function OrdersScreen() {
   const { orders, mode, cancelOrder } = useTradingStore();
   const { user } = useAuthStore();
-  const [activeTab, setActiveTab] = useState<OrderStatus | 'ALL'>('ALL');
+  const [activeTab, setActiveTab] = useState<OrderStatus | 'ALL' | 'GTT' | 'BASKETS'>('ALL');
   const logoScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -67,6 +66,14 @@ export default function OrdersScreen() {
 
   const filteredOrders = orders.filter((order) => {
     if (activeTab === 'ALL') return true;
+    if (activeTab === 'GTT') {
+      // Filter orders with GTT (Good Till Triggered)
+      return order.gtt !== undefined;
+    }
+    if (activeTab === 'BASKETS') {
+      // Filter basket orders (placeholder for future implementation)
+      return false; // No basket orders yet
+    }
     return order.status === activeTab;
   });
 
@@ -77,40 +84,6 @@ export default function OrdersScreen() {
       console.error('Cancel error:', error);
     }
   };
-
-  // Calculate order statistics
-  const openOrders = orders.filter(order => order.status === 'OPEN').length;
-  const executedOrders = orders.filter(order => order.status === 'EXECUTED').length;
-  const cancelledOrders = orders.filter(order => order.status === 'CANCELLED').length;
-  const totalOrderValue = orders
-    .filter(order => order.status === 'EXECUTED')
-    .reduce((sum, order) => sum + (order.quantity * order.price), 0);
-
-  const carouselItems = [
-    {
-      title: 'Executed',
-      value: executedOrders.toString(),
-      color: '#00C853',
-      subtitle: 'Completed',
-    },
-    {
-      title: 'Cancelled',
-      value: cancelledOrders.toString(),
-      color: '#FF5252',
-      subtitle: 'Rejected',
-    },
-    {
-      title: 'Order Value',
-      value: `₹${totalOrderValue.toLocaleString('en-IN')}`,
-      subtitle: 'Executed',
-    },
-    {
-      title: 'Success Rate',
-      value: `${orders.length > 0 ? Math.round((executedOrders / orders.length) * 100) : 0}%`,
-      color: colors.primary,
-      subtitle: 'Completion',
-    },
-  ];
 
   // Get user's first name for greeting
   const getUserName = () => {
@@ -144,9 +117,6 @@ export default function OrdersScreen() {
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
 
-      {/* Universal Carousel */}
-      <UniversalCarousel items={carouselItems} />
-
       <View style={styles.tabs}>
         {orderTabs.map((tab) => (
           <TouchableOpacity
@@ -172,8 +142,16 @@ export default function OrdersScreen() {
       {filteredOrders.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="document-text-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>No orders found</Text>
-          <Text style={styles.emptySubtext}>Your {activeTab.toLowerCase()} orders will appear here</Text>
+          <Text style={styles.emptyText}>
+            {activeTab === 'GTT' ? 'No GTT orders' : 
+             activeTab === 'BASKETS' ? 'No basket orders' : 
+             'No orders found'}
+          </Text>
+          <Text style={styles.emptySubtext}>
+            {activeTab === 'GTT' ? 'Your Good Till Triggered orders will appear here' :
+             activeTab === 'BASKETS' ? 'Create basket orders to see them here' :
+             `Your ${activeTab.toLowerCase()} orders will appear here`}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -215,9 +193,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: Platform.OS === 'ios' ? 48 : 44,
-    height: Platform.OS === 'ios' ? 48 : 44,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    width: Platform.OS === 'ios' ? 56 : 52,
+    height: Platform.OS === 'ios' ? 56 : 52,
+    borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 2 },
@@ -258,25 +236,22 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.card,
   },
   tab: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginRight: 8,
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderBottomColor: colors.primary,
   },
   tabText: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   activeTabText: {
-    color: colors.text,
+    color: colors.primary,
   },
   listContent: {
     padding: 16,
