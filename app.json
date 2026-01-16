@@ -1,11 +1,13 @@
 {
   "expo": {
-    "name": "Wealth-Warrior",
+    "name": "Wealth Warrior",
     "slug": "wealth-warrior",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/Wealth.png",
     "userInterfaceStyle": "dark",
     "splash": {
+      "image": "./assets/images/Wealth.png",
       "backgroundColor": "#000000",
       "resizeMode": "contain"
     },
@@ -14,13 +16,16 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.wealthwarrior.app"
+      "bundleIdentifier": "com.wealthwarrior.app",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/Wealth.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.wealthwarrior.app"
+      "package": "com.wealthwarrior.app",
+      "versionCode": 1
     },
     "plugins": [
       "expo-router"
@@ -28,9 +33,13 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "wealth-warrior-app"
       }
     },
-    "scheme": "wealth-warrior"
+    "scheme": "wealth-warrior",
+    "owner": "your-expo-username"
   }
 }
 
