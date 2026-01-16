@@ -2,21 +2,23 @@ import React, { useState, useRef } from 'react';
 import { View, StyleSheet, Dimensions, PanResponder, Text } from 'react-native';
 import Svg, { Rect, Line as SvgLine, Text as SvgText, Circle, G } from 'react-native-svg';
 import { Candle } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_WIDTH = SCREEN_WIDTH - 32;
 const CHART_HEIGHT = 300;
-const PADDING_LEFT = 50; // More space for price labels
+const PADDING_LEFT = 50;
 const PADDING_RIGHT = 10;
 const PADDING_TOP = 20;
 const PADDING_BOTTOM = 20;
-const BOTTOM_PADDING = 40; // Space for time labels
+const BOTTOM_PADDING = 40;
 
 interface CandlestickChartProps {
   data: Candle[];
 }
 
 export default function CandlestickChart({ data }: CandlestickChartProps) {
+  const { theme, isDark } = useTheme();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState(0);
@@ -28,6 +30,12 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
   const maxPrice = Math.max(...data.map(c => c.high));
   const minPrice = Math.min(...data.map(c => c.low));
   const priceRange = maxPrice - minPrice;
+  
+  // Candle colors - more appealing
+  const candleUpColor = isDark ? '#00E676' : '#00C853';  // Brighter green for dark, standard for light
+  const candleDownColor = isDark ? '#FF5252' : '#D32F2F';  // Standard red for dark, darker for light
+  const gridColor = isDark ? '#2A2A2A' : '#E0E0E0';
+  const textColor = isDark ? '#999' : '#666';
   
   // Apply zoom to candle width
   const chartDrawWidth = CHART_WIDTH - PADDING_LEFT - PADDING_RIGHT;
@@ -115,7 +123,7 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
   const selectedCandle = selectedIndex !== null ? data[selectedIndex] : null;
 
   return (
-    <View style={styles.container}>
+    <View style={createStyles(theme).container}>
       <View {...panResponder.panHandlers}>
         <Svg width={CHART_WIDTH} height={CHART_HEIGHT + BOTTOM_PADDING}>
           {/* Grid lines */}
@@ -129,15 +137,16 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
                   y1={y}
                   x2={CHART_WIDTH - PADDING_RIGHT}
                   y2={y}
-                  stroke="#2A2A2A"
+                  stroke={gridColor}
                   strokeWidth="1"
                   strokeDasharray="4,4"
                 />
                 <SvgText
                   x={PADDING_LEFT - 8}
                   y={y + 4}
-                  fill="#666"
-                  fontSize="10"
+                  fill={textColor}
+                  fontSize="9"
+                  fontWeight="600"
                   textAnchor="end"
                 >
                   {price.toFixed(0)}
@@ -151,7 +160,7 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
             {data.map((candle, index) => {
               const x = index * candleWidth + candleWidth / 2;
               const isGreen = candle.close >= candle.open;
-              const color = isGreen ? '#00C853' : '#FF5252';
+              const color = isGreen ? candleUpColor : candleDownColor;
               const isSelected = selectedIndex === index;
               
               // Only render visible candles for performance
@@ -180,7 +189,7 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
                     y1={highY}
                     x2={x}
                     y2={lowY}
-                    stroke={isSelected ? '#00D4FF' : color}
+                    stroke={isSelected ? theme.primary : color}
                     strokeWidth={isSelected ? wickWidth * 1.5 : wickWidth}
                   />
                   {/* Body */}
@@ -189,19 +198,19 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
                     y={bodyTop}
                     width={bodyWidth}
                     height={bodyHeight}
-                    fill={isSelected ? '#00D4FF' : color}
+                    fill={isSelected ? theme.primary : color}
                     opacity={isSelected ? 1 : 0.9}
                   />
                   {/* Selection indicator */}
                   {isSelected && (
                     <>
-                      <Circle cx={x} cy={closeY} r={4} fill="#00D4FF" />
+                      <Circle cx={x} cy={closeY} r={4} fill={theme.primary} />
                       <SvgLine
                         x1={x}
                         y1={PADDING_TOP}
                         x2={x}
                         y2={CHART_HEIGHT - PADDING_BOTTOM}
-                        stroke="#00D4FF"
+                        stroke={theme.primary}
                         strokeWidth="1"
                         strokeDasharray="2,2"
                         opacity={0.5}
@@ -213,7 +222,7 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
                     <SvgText
                       x={x}
                       y={CHART_HEIGHT + 15}
-                      fill="#666"
+                      fill={textColor}
                       fontSize="8"
                       textAnchor="middle"
                     >
@@ -229,17 +238,17 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
       
       {/* Zoom indicator */}
       {zoom > 1 && (
-        <View style={styles.zoomIndicator}>
-          <Text style={styles.zoomText}>Zoom: {zoom.toFixed(1)}x</Text>
+        <View style={createStyles(theme).zoomIndicator}>
+          <Text style={createStyles(theme).zoomText}>Zoom: {zoom.toFixed(1)}x</Text>
         </View>
       )}
 
       {/* Selected candle info */}
       {selectedCandle && (
-        <View style={styles.tooltip}>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>Time:</Text>
-            <Text style={styles.tooltipValue}>
+        <View style={createStyles(theme).tooltip}>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>Time:</Text>
+            <Text style={createStyles(theme).tooltipValue}>
               {new Date(selectedCandle.time).toLocaleString('en-IN', {
                 day: '2-digit',
                 month: 'short',
@@ -249,29 +258,29 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
               })}
             </Text>
           </View>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>Open:</Text>
-            <Text style={styles.tooltipValue}>₹{selectedCandle.open.toFixed(2)}</Text>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>Open:</Text>
+            <Text style={createStyles(theme).tooltipValue}>₹{selectedCandle.open.toFixed(2)}</Text>
           </View>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>High:</Text>
-            <Text style={[styles.tooltipValue, { color: '#00C853' }]}>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>High:</Text>
+            <Text style={[createStyles(theme).tooltipValue, { color: candleUpColor }]}>
               ₹{selectedCandle.high.toFixed(2)}
             </Text>
           </View>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>Low:</Text>
-            <Text style={[styles.tooltipValue, { color: '#FF5252' }]}>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>Low:</Text>
+            <Text style={[createStyles(theme).tooltipValue, { color: candleDownColor }]}>
               ₹{selectedCandle.low.toFixed(2)}
             </Text>
           </View>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>Close:</Text>
-            <Text style={styles.tooltipValue}>₹{selectedCandle.close.toFixed(2)}</Text>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>Close:</Text>
+            <Text style={createStyles(theme).tooltipValue}>₹{selectedCandle.close.toFixed(2)}</Text>
           </View>
-          <View style={styles.tooltipRow}>
-            <Text style={styles.tooltipLabel}>Volume:</Text>
-            <Text style={styles.tooltipValue}>
+          <View style={createStyles(theme).tooltipRow}>
+            <Text style={createStyles(theme).tooltipLabel}>Volume:</Text>
+            <Text style={createStyles(theme).tooltipValue}>
               {(selectedCandle.volume / 1000000).toFixed(2)}M
             </Text>
           </View>
@@ -281,33 +290,33 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#0A0A0A',
+    backgroundColor: theme.surface,
   },
   zoomIndicator: {
     position: 'absolute',
     top: 5,
     right: 10,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: theme.card,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#00D4FF',
+    borderColor: theme.primary,
   },
   zoomText: {
-    color: '#00D4FF',
+    color: theme.primary,
     fontSize: 10,
     fontWeight: 'bold',
   },
   tooltip: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#00D4FF',
+    borderColor: theme.primary,
   },
   tooltipRow: {
     flexDirection: 'row',
@@ -316,12 +325,12 @@ const styles = StyleSheet.create({
   },
   tooltipLabel: {
     fontSize: 14,
-    color: '#999',
+    color: theme.textSecondary,
     fontWeight: '500',
   },
   tooltipValue: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: theme.text,
     fontWeight: 'bold',
   },
 });

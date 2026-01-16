@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ZeroYodha",
-    "slug": "zeroyodha",
+    "name": "Wealth-Warrior",
+    "slug": "wealth-warrior",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
@@ -14,13 +14,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zeroyodha.app"
+      "bundleIdentifier": "com.wealthwarrior.app"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#000000"
       },
-      "package": "com.zeroyodha.app"
+      "package": "com.wealthwarrior.app"
     },
     "plugins": [
       "expo-router"
@@ -30,7 +30,7 @@
         "origin": false
       }
     },
-    "scheme": "zeroyodha"
+    "scheme": "wealth-warrior"
   }
 }
 

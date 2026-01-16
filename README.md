@@ -1,6 +1,8 @@
-# ZeroYodha - Zerodha Kite Clone
+# Wealth-Warrior - Advanced Trading Platform
 
-A comprehensive Zerodha Kite clone built with Expo SDK 54, React Native, and TypeScript. This app replicates Zerodha Kite's trading functionality with an added Paper Trading mode for risk-free learning.
+A comprehensive trading platform built with Expo SDK 54, React Native, and TypeScript. Wealth-Warrior offers professional trading functionality with an added Paper Trading mode for risk-free learning.
+
+## Features
 
 ## 🇮🇳 India-Only Trading Platform
 
@@ -46,7 +48,7 @@ This app is designed exclusively for Indian markets:
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd Zeroyodha
+cd wealth-warrior
 ```
 
 2. Install dependencies (with Expo SDK 54 compatibility):

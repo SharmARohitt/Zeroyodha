@@ -291,7 +291,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     borderBottomColor: theme.border,
   },
   price: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: 'bold',
     color: theme.text,
     marginBottom: 12,
@@ -305,7 +305,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     gap: 6,
   },
   change: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   timeFrameContainer: {
@@ -360,9 +360,10 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.textMuted,
     marginBottom: 4,
     textTransform: 'uppercase',
+    fontWeight: '600',
   },
   statValue: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 'bold',
     color: theme.text,
   },

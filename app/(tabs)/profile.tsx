@@ -16,6 +16,7 @@ import { useTradingStore } from '../../src/store/useTradingStore';
 import { Ionicons } from '@expo/vector-icons';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -59,6 +60,55 @@ export default function ProfileScreen() {
       ).start();
     }
   }, []);
+
+  const handleChangeProfilePhoto = async () => {
+    Alert.alert(
+      'Change Profile Photo',
+      'Choose an option',
+      [
+        {
+          text: 'Take Photo',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission needed', 'Camera permission is required to take photos');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              // TODO: Upload photo to server and update user profile
+              Alert.alert('Success', 'Profile photo updated!');
+            }
+          },
+        },
+        {
+          text: 'Choose from Library',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission needed', 'Photo library permission is required');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              // TODO: Upload photo to server and update user profile
+              Alert.alert('Success', 'Profile photo updated!');
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -125,24 +175,17 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={createStyles(theme).container} contentContainerStyle={createStyles(theme).contentContainer}>
       <View style={createStyles(theme).header}>
-        <View style={createStyles(theme).headerTop}>
-          <View style={createStyles(theme).headerLeft}>
-            <Animated.View style={{ transform: [{ scale: logoScale }] }}>
-              <Image
-                source={require('../../assets/images/Wealth.png')}
-                style={createStyles(theme).logo}
-                resizeMode="contain"
-              />
-            </Animated.View>
-            <Text style={createStyles(theme).headerTitle}>Hey {getUserName()}!</Text>
-          </View>
-        </View>
         <View style={createStyles(theme).profileSection}>
-          <Animated.View style={[createStyles(theme).avatar, { transform: [{ scale: avatarScale }] }]}>
-            <Text style={createStyles(theme).avatarText}>
-              {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
-            </Text>
-          </Animated.View>
+          <TouchableOpacity onPress={handleChangeProfilePhoto} activeOpacity={0.8}>
+            <Animated.View style={[createStyles(theme).avatar, { transform: [{ scale: avatarScale }] }]}>
+              <Text style={createStyles(theme).avatarText}>
+                {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+              </Text>
+              <View style={createStyles(theme).cameraIcon}>
+                <Ionicons name="camera" size={16} color={theme.text} />
+              </View>
+            </Animated.View>
+          </TouchableOpacity>
           <View style={createStyles(theme).userInfo}>
             <Text style={createStyles(theme).userName}>
               {user?.displayName || 'User'}
@@ -269,42 +312,6 @@ const createStyles = (theme: any) => StyleSheet.create({
       shadowRadius: 8,
     }),
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logo: {
-    width: Platform.OS === 'ios' ? 56 : 52,
-    height: Platform.OS === 'ios' ? 56 : 52,
-    borderRadius: Platform.OS === 'ios' ? 14 : 12,
-    ...(Platform.OS === 'ios' && {
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
-    }),
-  },
-  headerTitle: {
-    fontSize: Platform.OS === 'ios' ? 24 : 22,
-    fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: theme.text,
-    ...(Platform.OS === 'ios' && {
-      letterSpacing: 0.5,
-      textShadowColor: theme.text + '1A',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    }),
-  },
-  settingsButton: {
-    padding: 6,
-  },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,6 +324,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    position: 'relative',
     ...(Platform.OS === 'ios' && {
       shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 4 },
@@ -330,6 +338,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     color: theme.text,
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: theme.primary,
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.surface,
   },
   userInfo: {
     flex: 1,
