@@ -118,116 +118,111 @@ export default function CandlestickChart({ data }: CandlestickChartProps) {
     <View style={styles.container}>
       <View {...panResponder.panHandlers}>
         <Svg width={CHART_WIDTH} height={CHART_HEIGHT + BOTTOM_PADDING}>
-          {/* Clip path to keep chart within bounds */}
-          <G>
-            {/* Grid lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
-              const y = PADDING_TOP + (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM) * ratio;
-              const price = maxPrice - priceRange * ratio;
+          {/* Grid lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => {
+            const y = PADDING_TOP + (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM) * ratio;
+            const price = maxPrice - priceRange * ratio;
+            return (
+              <React.Fragment key={i}>
+                <SvgLine
+                  x1={PADDING_LEFT}
+                  y1={y}
+                  x2={CHART_WIDTH - PADDING_RIGHT}
+                  y2={y}
+                  stroke="#2A2A2A"
+                  strokeWidth="1"
+                  strokeDasharray="4,4"
+                />
+                <SvgText
+                  x={PADDING_LEFT - 8}
+                  y={y + 4}
+                  fill="#666"
+                  fontSize="10"
+                  textAnchor="end"
+                >
+                  {price.toFixed(0)}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
+
+          {/* Candlesticks with pan offset */}
+          <G x={PADDING_LEFT - clampedPanOffset}>
+            {data.map((candle, index) => {
+              const x = index * candleWidth + candleWidth / 2;
+              const isGreen = candle.close >= candle.open;
+              const color = isGreen ? '#00C853' : '#FF5252';
+              const isSelected = selectedIndex === index;
+              
+              // Only render visible candles for performance
+              const screenX = x - clampedPanOffset + PADDING_LEFT;
+              if (screenX < PADDING_LEFT - candleWidth || screenX > CHART_WIDTH - PADDING_RIGHT + candleWidth) {
+                return null;
+              }
+              
+              const highY = PADDING_TOP + ((maxPrice - candle.high) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+              const lowY = PADDING_TOP + ((maxPrice - candle.low) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+              const openY = PADDING_TOP + ((maxPrice - candle.open) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+              const closeY = PADDING_TOP + ((maxPrice - candle.close) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
+              
+              const bodyTop = Math.min(openY, closeY);
+              const bodyHeight = Math.abs(closeY - openY) || 1;
+
+              // Show time label for every nth candle based on zoom
+              const labelInterval = Math.max(1, Math.floor(data.length / (4 * zoom)));
+              const showTimeLabel = index % labelInterval === 0;
+
               return (
-                <React.Fragment key={i}>
+                <React.Fragment key={index}>
+                  {/* Wick */}
                   <SvgLine
-                    x1={PADDING_LEFT}
-                    y1={y}
-                    x2={CHART_WIDTH - PADDING_RIGHT}
-                    y2={y}
-                    stroke="#2A2A2A"
-                    strokeWidth="1"
-                    strokeDasharray="4,4"
+                    x1={x}
+                    y1={highY}
+                    x2={x}
+                    y2={lowY}
+                    stroke={isSelected ? '#00D4FF' : color}
+                    strokeWidth={isSelected ? wickWidth * 1.5 : wickWidth}
                   />
-                  <SvgText
-                    x={PADDING_LEFT - 8}
-                    y={y + 4}
-                    fill="#666"
-                    fontSize="10"
-                    textAnchor="end"
-                  >
-                    {price.toFixed(0)}
-                  </SvgText>
+                  {/* Body */}
+                  <Rect
+                    x={x - bodyWidth / 2}
+                    y={bodyTop}
+                    width={bodyWidth}
+                    height={bodyHeight}
+                    fill={isSelected ? '#00D4FF' : color}
+                    opacity={isSelected ? 1 : 0.9}
+                  />
+                  {/* Selection indicator */}
+                  {isSelected && (
+                    <>
+                      <Circle cx={x} cy={closeY} r={4} fill="#00D4FF" />
+                      <SvgLine
+                        x1={x}
+                        y1={PADDING_TOP}
+                        x2={x}
+                        y2={CHART_HEIGHT - PADDING_BOTTOM}
+                        stroke="#00D4FF"
+                        strokeWidth="1"
+                        strokeDasharray="2,2"
+                        opacity={0.5}
+                      />
+                    </>
+                  )}
+                  {/* Time labels */}
+                  {showTimeLabel && (
+                    <SvgText
+                      x={x}
+                      y={CHART_HEIGHT + 15}
+                      fill="#666"
+                      fontSize="8"
+                      textAnchor="middle"
+                    >
+                      {formatTime(candle.time)}
+                    </SvgText>
+                  )}
                 </React.Fragment>
               );
             })}
-
-            {/* Candlesticks with pan offset - clipped to chart area */}
-            <G clipPath="url(#chartClip)">
-              <G x={PADDING_LEFT - clampedPanOffset}>
-                {data.map((candle, index) => {
-                  const x = index * candleWidth + candleWidth / 2;
-                  const isGreen = candle.close >= candle.open;
-                  const color = isGreen ? '#00C853' : '#FF5252';
-                  const isSelected = selectedIndex === index;
-                  
-                  // Only render visible candles for performance
-                  const screenX = x - clampedPanOffset + PADDING_LEFT;
-                  if (screenX < PADDING_LEFT - candleWidth || screenX > CHART_WIDTH - PADDING_RIGHT + candleWidth) {
-                    return null;
-                  }
-                  
-                  const highY = PADDING_TOP + ((maxPrice - candle.high) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
-                  const lowY = PADDING_TOP + ((maxPrice - candle.low) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
-                  const openY = PADDING_TOP + ((maxPrice - candle.open) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
-                  const closeY = PADDING_TOP + ((maxPrice - candle.close) / priceRange) * (CHART_HEIGHT - PADDING_TOP - PADDING_BOTTOM);
-                  
-                  const bodyTop = Math.min(openY, closeY);
-                  const bodyHeight = Math.abs(closeY - openY) || 1;
-
-                  // Show time label for every nth candle based on zoom
-                  const labelInterval = Math.max(1, Math.floor(data.length / (4 * zoom)));
-                  const showTimeLabel = index % labelInterval === 0;
-
-                  return (
-                    <React.Fragment key={index}>
-                      {/* Wick */}
-                      <SvgLine
-                        x1={x}
-                        y1={highY}
-                        x2={x}
-                        y2={lowY}
-                        stroke={isSelected ? '#00D4FF' : color}
-                        strokeWidth={isSelected ? wickWidth * 1.5 : wickWidth}
-                      />
-                      {/* Body */}
-                      <Rect
-                        x={x - bodyWidth / 2}
-                        y={bodyTop}
-                        width={bodyWidth}
-                        height={bodyHeight}
-                        fill={isSelected ? '#00D4FF' : color}
-                        opacity={isSelected ? 1 : 0.9}
-                      />
-                      {/* Selection indicator */}
-                      {isSelected && (
-                        <>
-                          <Circle cx={x} cy={closeY} r={4} fill="#00D4FF" />
-                          <SvgLine
-                            x1={x}
-                            y1={PADDING_TOP}
-                            x2={x}
-                            y2={CHART_HEIGHT - PADDING_BOTTOM}
-                            stroke="#00D4FF"
-                            strokeWidth="1"
-                            strokeDasharray="2,2"
-                            opacity={0.5}
-                          />
-                        </>
-                      )}
-                      {/* Time labels */}
-                      {showTimeLabel && (
-                        <SvgText
-                          x={x}
-                          y={CHART_HEIGHT + 15}
-                          fill="#666"
-                          fontSize="8"
-                          textAnchor="middle"
-                        >
-                          {formatTime(candle.time)}
-                        </SvgText>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </G>
-            </G>
           </G>
         </Svg>
       </View>
@@ -292,18 +287,18 @@ const styles = StyleSheet.create({
   },
   zoomIndicator: {
     position: 'absolute',
-    top: 10,
+    top: 5,
     right: 10,
     backgroundColor: '#1A1A1A',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#00D4FF',
   },
   zoomText: {
     color: '#00D4FF',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   tooltip: {

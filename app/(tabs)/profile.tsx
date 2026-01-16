@@ -148,9 +148,6 @@ export default function ProfileScreen() {
             </Animated.View>
             <Text style={styles.headerTitle}>Hey {getUserName()}!</Text>
           </View>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
         </View>
         <View style={styles.profileSection}>
           <Animated.View style={[styles.avatar, { transform: [{ scale: avatarScale }] }]}>

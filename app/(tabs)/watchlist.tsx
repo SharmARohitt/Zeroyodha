@@ -46,10 +46,13 @@ export default function WatchlistScreen() {
     stocks, 
     initializeMarketData,
     setCurrentWatchlist,
+    createWatchlist,
   } = useMarketStore();
   const { user } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'gainers' | 'losers'>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({ visible: false, message: '', type: 'success' });
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
@@ -107,6 +110,15 @@ export default function WatchlistScreen() {
     );
   }
 
+  // Filter by type (gainers/losers)
+  if (filterType === 'gainers') {
+    watchlistStocks = watchlistStocks.filter(stock => stock.change > 0);
+    watchlistStocks.sort((a, b) => b.changePercent - a.changePercent);
+  } else if (filterType === 'losers') {
+    watchlistStocks = watchlistStocks.filter(stock => stock.change < 0);
+    watchlistStocks.sort((a, b) => a.changePercent - b.changePercent);
+  }
+
   const onRefresh = async () => {
     setRefreshing(true);
     await initializeMarketData();
@@ -127,6 +139,26 @@ export default function WatchlistScreen() {
 
   const handleAddStock = () => {
     router.push('/search');
+  };
+
+  const handleAddWatchlist = () => {
+    const watchlistNumber = watchlists.length + 1;
+    const newName = `Watchlist ${watchlistNumber}`;
+    createWatchlist(newName);
+    setToast({
+      visible: true,
+      message: `Created ${newName}`,
+      type: 'success',
+    });
+  };
+
+  const handleFilterPress = () => {
+    setShowFilterMenu(!showFilterMenu);
+  };
+
+  const handleFilterSelect = (type: 'all' | 'gainers' | 'losers') => {
+    setFilterType(type);
+    setShowFilterMenu(false);
   };
 
   const handleNotificationPress = () => {
@@ -224,6 +256,7 @@ export default function WatchlistScreen() {
         watchlists={watchlists}
         currentWatchlist={currentWatchlist}
         onTabPress={handleTabPress}
+        onAddWatchlist={handleAddWatchlist}
       />
 
       {/* Search and Filter Bar */}
@@ -242,11 +275,47 @@ export default function WatchlistScreen() {
           <Text style={styles.searchMetaText}>
             {watchlistStocks.length}/{currentWatchlistData?.symbols.length || 0}
           </Text>
-          <TouchableOpacity style={styles.filterButton}>
-            <Ionicons name="options" size={20} color="#666" />
+          <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
+            <Ionicons 
+              name="options" 
+              size={20} 
+              color={filterType !== 'all' ? colors.primary : '#666'} 
+            />
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Filter Menu */}
+      {showFilterMenu && (
+        <View style={styles.filterMenu}>
+          <TouchableOpacity
+            style={[styles.filterOption, filterType === 'all' && styles.filterOptionActive]}
+            onPress={() => handleFilterSelect('all')}
+          >
+            <Text style={[styles.filterOptionText, filterType === 'all' && styles.filterOptionTextActive]}>
+              All Stocks
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterOption, filterType === 'gainers' && styles.filterOptionActive]}
+            onPress={() => handleFilterSelect('gainers')}
+          >
+            <Ionicons name="trending-up" size={16} color={colors.profit} />
+            <Text style={[styles.filterOptionText, filterType === 'gainers' && styles.filterOptionTextActive]}>
+              Gainers
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterOption, filterType === 'losers' && styles.filterOptionActive]}
+            onPress={() => handleFilterSelect('losers')}
+          >
+            <Ionicons name="trending-down" size={16} color={colors.loss} />
+            <Text style={[styles.filterOptionText, filterType === 'losers' && styles.filterOptionTextActive]}>
+              Losers
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Watchlist Content */}
       {watchlistStocks.length === 0 ? (
@@ -448,6 +517,41 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: colors.text,
     fontSize: 16,
+    fontWeight: '600',
+  },
+  filterMenu: {
+    backgroundColor: colors.card,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 12,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+    }),
+  },
+  filterOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  filterOptionActive: {
+    backgroundColor: colors.backgroundSecondary,
+  },
+  filterOptionText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  filterOptionTextActive: {
+    color: colors.primary,
     fontWeight: '600',
   },
 });
