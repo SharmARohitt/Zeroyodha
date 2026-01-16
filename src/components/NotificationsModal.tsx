@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StockAlert } from '../services/notificationService';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Simple time ago function to replace date-fns
 function timeAgo(date: Date): string {
@@ -21,19 +22,6 @@ function timeAgo(date: Date): string {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
   return `${Math.floor(diffInSeconds / 86400)}d ago`;
 }
-
-const colors = {
-  primary: '#00D4FF',
-  profit: '#00C853',
-  loss: '#FF5252',
-  warning: '#FFC107',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
 
 interface NotificationsModalProps {
   visible: boolean;
@@ -50,6 +38,8 @@ export default function NotificationsModal({
   onMarkAsRead,
   onMarkAllAsRead,
 }: NotificationsModalProps) {
+  const { theme } = useTheme();
+  
   const getAlertIcon = (type: StockAlert['type']) => {
     switch (type) {
       case 'urgent_news':
@@ -70,17 +60,17 @@ export default function NotificationsModal({
   const getAlertColor = (type: StockAlert['type']) => {
     switch (type) {
       case 'urgent_news':
-        return colors.loss;
+        return theme.loss;
       case 'news_alert':
-        return colors.primary;
+        return theme.primary;
       case 'price_increase':
-        return colors.profit;
+        return theme.profit;
       case 'price_decrease':
-        return colors.loss;
+        return theme.loss;
       case 'volume_spike':
-        return colors.warning;
+        return theme.warning;
       default:
-        return colors.primary;
+        return theme.primary;
     }
   };
 
@@ -90,28 +80,28 @@ export default function NotificationsModal({
 
     return (
       <TouchableOpacity
-        style={[styles.alertCard, !item.read && styles.alertCardUnread]}
+        style={[createStyles(theme).alertCard, !item.read && createStyles(theme).alertCardUnread]}
         onPress={() => onMarkAsRead(item.id)}
         activeOpacity={0.7}
       >
-        <View style={[styles.alertIcon, { backgroundColor: alertColor + '20' }]}>
+        <View style={[createStyles(theme).alertIcon, { backgroundColor: alertColor + '20' }]}>
           <Ionicons name={icon} size={20} color={alertColor} />
         </View>
-        <View style={styles.alertContent}>
-          <View style={styles.alertHeader}>
-            <Text style={styles.alertSymbol}>{item.symbol}</Text>
-            <Text style={styles.alertTime}>
+        <View style={createStyles(theme).alertContent}>
+          <View style={createStyles(theme).alertHeader}>
+            <Text style={createStyles(theme).alertSymbol}>{item.symbol}</Text>
+            <Text style={createStyles(theme).alertTime}>
               {timeAgo(item.timestamp)}
             </Text>
           </View>
-          <Text style={styles.alertMessage}>{item.message}</Text>
+          <Text style={createStyles(theme).alertMessage}>{item.message}</Text>
           {item.urgent && (
-            <View style={styles.urgentBadge}>
-              <Text style={styles.urgentText}>URGENT</Text>
+            <View style={createStyles(theme).urgentBadge}>
+              <Text style={createStyles(theme).urgentText}>URGENT</Text>
             </View>
           )}
         </View>
-        {!item.read && <View style={styles.unreadDot} />}
+        {!item.read && <View style={createStyles(theme).unreadDot} />}
       </TouchableOpacity>
     );
   };
@@ -123,32 +113,32 @@ export default function NotificationsModal({
       transparent={false}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Ionicons name="notifications" size={24} color={colors.primary} />
-            <Text style={styles.headerTitle}>Notifications</Text>
+      <View style={createStyles(theme).container}>
+        <View style={createStyles(theme).header}>
+          <View style={createStyles(theme).headerLeft}>
+            <Ionicons name="notifications" size={24} color={theme.primary} />
+            <Text style={createStyles(theme).headerTitle}>Notifications</Text>
           </View>
-          <View style={styles.headerRight}>
+          <View style={createStyles(theme).headerRight}>
             {alerts.some(a => !a.read) && (
               <TouchableOpacity
-                style={styles.markAllButton}
+                style={createStyles(theme).markAllButton}
                 onPress={onMarkAllAsRead}
               >
-                <Text style={styles.markAllText}>Mark all read</Text>
+                <Text style={createStyles(theme).markAllText}>Mark all read</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={28} color={colors.text} />
+            <TouchableOpacity onPress={onClose} style={createStyles(theme).closeButton}>
+              <Ionicons name="close" size={28} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {alerts.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="notifications-off-outline" size={64} color={colors.textMuted} />
-            <Text style={styles.emptyText}>No notifications</Text>
-            <Text style={styles.emptySubtext}>
+          <View style={createStyles(theme).emptyContainer}>
+            <Ionicons name="notifications-off-outline" size={64} color={theme.textMuted} />
+            <Text style={createStyles(theme).emptyText}>No notifications</Text>
+            <Text style={createStyles(theme).emptySubtext}>
               You'll see urgent market news and alerts here
             </Text>
           </View>
@@ -157,7 +147,7 @@ export default function NotificationsModal({
             data={alerts}
             keyExtractor={(item) => item.id}
             renderItem={renderAlert}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={createStyles(theme).listContent}
             showsVerticalScrollIndicator={false}
           />
         )}
@@ -166,10 +156,10 @@ export default function NotificationsModal({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -178,9 +168,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 16,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: theme.border,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -190,7 +180,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   headerRight: {
     flexDirection: 'row',
@@ -201,12 +191,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
   },
   markAllText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.primary,
+    color: theme.primary,
   },
   closeButton: {
     padding: 4,
@@ -217,16 +207,16 @@ const styles = StyleSheet.create({
   },
   alertCard: {
     flexDirection: 'row',
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
     position: 'relative',
   },
   alertCardUnread: {
-    borderColor: colors.primary,
+    borderColor: theme.primary,
     borderWidth: 1.5,
   },
   alertIcon: {
@@ -249,21 +239,21 @@ const styles = StyleSheet.create({
   alertSymbol: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: theme.primary,
     textTransform: 'uppercase',
   },
   alertTime: {
     fontSize: 11,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   alertMessage: {
     fontSize: 14,
-    color: colors.text,
+    color: theme.text,
     lineHeight: 20,
   },
   urgentBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: colors.loss,
+    backgroundColor: theme.loss,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
@@ -272,7 +262,7 @@ const styles = StyleSheet.create({
   urgentText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   unreadDot: {
     position: 'absolute',
@@ -281,7 +271,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
   },
   emptyContainer: {
     flex: 1,
@@ -292,12 +282,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 8,
     textAlign: 'center',
   },

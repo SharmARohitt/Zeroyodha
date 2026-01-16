@@ -4,6 +4,7 @@ import { Stock } from '../types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getStockLogo } from '../utils/stockLogos';
 import { benzingaService } from '../services/benzingaService';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface StockCardProps {
   stock: Stock;
@@ -11,14 +12,28 @@ interface StockCardProps {
 }
 
 export default function StockCard({ stock, onPress }: StockCardProps) {
+  const { theme } = useTheme();
   const isPositive = stock.change >= 0;
-  const changeColor = isPositive ? '#00C853' : '#FF5252';
+  const changeColor = isPositive ? theme.profit : theme.loss;
   const [logoInfo, setLogoInfo] = useState(getStockLogo(stock.symbol));
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Try to fetch real logo from Benzinga if not cached
+  // Try to fetch real logo from Benzinga if not cached - only once
   useEffect(() => {
     const fetchLogo = async () => {
-      if (!logoInfo.imageUrl) {
+      // Check if we already have a cached logo
+      const cachedLogo = benzingaService.getCachedLogo(stock.symbol);
+      if (cachedLogo) {
+        setLogoInfo(prev => ({
+          ...prev,
+          imageUrl: cachedLogo,
+        }));
+        return;
+      }
+
+      // Only fetch if we don't have an image URL and haven't tried yet
+      if (!logoInfo.imageUrl && !isLoading) {
+        setIsLoading(true);
         try {
           const realLogo = await benzingaService.getStockLogo(stock.symbol);
           if (realLogo) {
@@ -29,61 +44,63 @@ export default function StockCard({ stock, onPress }: StockCardProps) {
           }
         } catch (error) {
           console.warn(`Failed to fetch logo for ${stock.symbol}:`, error);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
 
     fetchLogo();
-  }, [stock.symbol, logoInfo.imageUrl]);
+  }, [stock.symbol]); // Only depend on symbol, not logoInfo
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.card}>
+      <View style={createStyles(theme).card}>
         <LinearGradient
-          colors={['#1A1A1A', '#0A0A0A']}
-          style={styles.gradient}
+          colors={[theme.card, theme.surface]}
+          style={createStyles(theme).gradient}
         >
-          <View style={styles.content}>
-            <View style={styles.leftSection}>
-              <View style={[styles.logoContainer, { backgroundColor: logoInfo.imageUrl ? '#FFFFFF' : logoInfo.color }]}>
+          <View style={createStyles(theme).content}>
+            <View style={createStyles(theme).leftSection}>
+              <View style={[createStyles(theme).logoContainer, { backgroundColor: logoInfo.imageUrl ? '#FFFFFF' : logoInfo.color }]}>
                 {logoInfo.imageUrl ? (
                   <Image
                     source={{ uri: logoInfo.imageUrl }}
-                    style={styles.logoImage}
+                    style={createStyles(theme).logoImage}
                     resizeMode="contain"
                     onError={() => {
-                      // If image fails to load, fallback to text
                       setLogoInfo(prev => ({ ...prev, imageUrl: undefined }));
+                      setIsLoading(false);
                     }}
                   />
                 ) : (
-                  <Text style={styles.logoText}>
+                  <Text style={createStyles(theme).logoText}>
                     {stock.symbol.substring(0, 2).toUpperCase()}
                   </Text>
                 )}
               </View>
-              <View style={styles.info}>
-                <Text style={styles.symbol}>{stock.symbol}</Text>
-                <View style={styles.categoryRow}>
-                  <Text style={styles.category}>
+              <View style={createStyles(theme).info}>
+                <Text style={createStyles(theme).symbol}>{stock.symbol}</Text>
+                <View style={createStyles(theme).categoryRow}>
+                  <Text style={createStyles(theme).category}>
                     {stock.instrumentType === 'INDEX' ? 'INDICES' : stock.exchange}
                   </Text>
                 </View>
-                <Text style={styles.name} numberOfLines={1}>
+                <Text style={createStyles(theme).name} numberOfLines={1}>
                   {stock.name}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.rightSection}>
-              <Text style={styles.price}>₹{stock.lastPrice.toFixed(2)}</Text>
-              <View style={styles.changeContainer}>
-                <Text style={[styles.change, { color: changeColor }]}>
+            <View style={createStyles(theme).rightSection}>
+              <Text style={createStyles(theme).price}>₹{stock.lastPrice.toFixed(2)}</Text>
+              <View style={createStyles(theme).changeContainer}>
+                <Text style={[createStyles(theme).change, { color: changeColor }]}>
                   {isPositive ? '+' : ''}
                   {stock.change.toFixed(2)} ({stock.changePercent.toFixed(2)}%)
                 </Text>
               </View>
-              <Text style={styles.volume}>
+              <Text style={createStyles(theme).volume}>
                 Vol: {(stock.volume / 1000).toFixed(0)}K
               </Text>
             </View>
@@ -94,7 +111,7 @@ export default function StockCard({ stock, onPress }: StockCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   card: {
     marginBottom: 12,
     borderRadius: 12,
@@ -117,7 +134,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2962FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -138,7 +154,7 @@ const styles = StyleSheet.create({
   symbol: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 4,
   },
   categoryRow: {
@@ -146,13 +162,13 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: 10,
-    color: '#666',
+    color: theme.textMuted,
     textTransform: 'uppercase',
     fontWeight: '500',
   },
   name: {
     fontSize: 12,
-    color: '#999',
+    color: theme.textSecondary,
     marginTop: 2,
   },
   rightSection: {
@@ -161,7 +177,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 4,
   },
   changeContainer: {
@@ -173,7 +189,7 @@ const styles = StyleSheet.create({
   },
   volume: {
     fontSize: 10,
-    color: '#666',
+    color: theme.textMuted,
   },
 });
 

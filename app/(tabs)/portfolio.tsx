@@ -19,24 +19,12 @@ import { Ionicons } from '@expo/vector-icons';
 import PositionCard from '../../src/components/PositionCard';
 import HoldingCard from '../../src/components/HoldingCard';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-  textSecondary: '#999999',
-};
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 type TabType = 'HOLDINGS' | 'POSITIONS';
 
 export default function PortfolioScreen() {
+  const { theme } = useTheme();
   const { holdings, positions, mode, funds } = useTradingStore();
   const { stocks, updateMarketData } = useMarketStore();
   const { user } = useAuthStore();
@@ -109,28 +97,28 @@ export default function PortfolioScreen() {
 
   return (
     <ScrollView 
-      style={styles.container}
+      style={createStyles(theme).container}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colors.primary}
+          tintColor={theme.primary}
         />
       }
     >
-      <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
-        <View style={styles.headerLeft}>
+      <Animated.View style={[createStyles(theme).header, { opacity: headerOpacity }]}>
+        <View style={createStyles(theme).headerLeft}>
           <Animated.View style={{ transform: [{ scale: logoScale }] }}>
             <Image
               source={require('../../assets/images/Wealth.png')}
-              style={styles.logo}
+              style={createStyles(theme).logo}
               resizeMode="contain"
             />
           </Animated.View>
-          <Text style={styles.title}>Hey {getUserName()}!</Text>
+          <Text style={createStyles(theme).title}>Hey {getUserName()}!</Text>
         </View>
-        <View style={styles.modeBadge}>
-          <Text style={styles.modeText}>{mode === 'PAPER' ? '📝 Paper' : '💰 Live'}</Text>
+        <View style={createStyles(theme).modeBadge}>
+          <Text style={createStyles(theme).modeText}>{mode === 'PAPER' ? '📝 Paper' : '💰 Live'}</Text>
         </View>
       </Animated.View>
 
@@ -138,32 +126,32 @@ export default function PortfolioScreen() {
       <TopIndicesCarousel />
 
       {/* Enhanced Summary */}
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryHeader}>
-            <Text style={styles.summaryTitle}>Holdings Summary</Text>
+      <View style={createStyles(theme).summaryContainer}>
+        <View style={createStyles(theme).summaryCard}>
+          <View style={createStyles(theme).summaryHeader}>
+            <Text style={createStyles(theme).summaryTitle}>Holdings Summary</Text>
             <TouchableOpacity>
-              <Ionicons name="analytics-outline" size={20} color={colors.primary} />
+              <Ionicons name="analytics-outline" size={20} color={theme.primary} />
             </TouchableOpacity>
           </View>
-          <View style={styles.summaryGrid}>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Investment</Text>
-              <Text style={styles.summaryValue}>₹{totalInvestment.toLocaleString('en-IN')}</Text>
+          <View style={createStyles(theme).summaryGrid}>
+            <View style={createStyles(theme).summaryItem}>
+              <Text style={createStyles(theme).summaryLabel}>Investment</Text>
+              <Text style={createStyles(theme).summaryValue}>₹{totalInvestment.toLocaleString('en-IN')}</Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Current</Text>
-              <Text style={styles.summaryValue}>₹{totalCurrentValue.toLocaleString('en-IN')}</Text>
+            <View style={createStyles(theme).summaryItem}>
+              <Text style={createStyles(theme).summaryLabel}>Current</Text>
+              <Text style={createStyles(theme).summaryValue}>₹{totalCurrentValue.toLocaleString('en-IN')}</Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>P&L</Text>
-              <Text style={[styles.summaryValue, { color: totalHoldingsPnl >= 0 ? colors.profit : colors.loss }]}>
+            <View style={createStyles(theme).summaryItem}>
+              <Text style={createStyles(theme).summaryLabel}>P&L</Text>
+              <Text style={[createStyles(theme).summaryValue, { color: totalHoldingsPnl >= 0 ? theme.profit : theme.loss }]}>
                 {totalHoldingsPnl >= 0 ? '+' : ''}₹{totalHoldingsPnl.toFixed(0)}
               </Text>
             </View>
-            <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Returns</Text>
-              <Text style={[styles.summaryValue, { color: totalHoldingsPnl >= 0 ? colors.profit : colors.loss }]}>
+            <View style={createStyles(theme).summaryItem}>
+              <Text style={createStyles(theme).summaryLabel}>Returns</Text>
+              <Text style={[createStyles(theme).summaryValue, { color: totalHoldingsPnl >= 0 ? theme.profit : theme.loss }]}>
                 {totalHoldingsPnlPercent >= 0 ? '+' : ''}{totalHoldingsPnlPercent.toFixed(2)}%
               </Text>
             </View>
@@ -171,28 +159,28 @@ export default function PortfolioScreen() {
         </View>
       </View>
 
-      <View style={styles.tabs}>
+      <View style={createStyles(theme).tabs}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'HOLDINGS' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'HOLDINGS' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('HOLDINGS')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'HOLDINGS' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'HOLDINGS' && createStyles(theme).activeTabText,
             ]}
           >
             Holdings ({holdings.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'POSITIONS' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'POSITIONS' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('POSITIONS')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'POSITIONS' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'POSITIONS' && createStyles(theme).activeTabText,
             ]}
           >
             Positions ({positions.length})
@@ -200,13 +188,13 @@ export default function PortfolioScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.listContainer}>
+      <View style={createStyles(theme).listContainer}>
         {activeTab === 'HOLDINGS' ? (
           holdings.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="pie-chart-outline" size={64} color="#666" />
-              <Text style={styles.emptyText}>No holdings</Text>
-              <Text style={styles.emptySubtext}>Start investing to see your holdings here</Text>
+            <View style={createStyles(theme).emptyContainer}>
+              <Ionicons name="pie-chart-outline" size={64} color={theme.textMuted} />
+              <Text style={createStyles(theme).emptyText}>No holdings</Text>
+              <Text style={createStyles(theme).emptySubtext}>Start investing to see your holdings here</Text>
             </View>
           ) : (
             <View>
@@ -217,10 +205,10 @@ export default function PortfolioScreen() {
           )
         ) : (
           positions.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="trending-up-outline" size={64} color="#666" />
-              <Text style={styles.emptyText}>No positions</Text>
-              <Text style={styles.emptySubtext}>Your intraday positions will appear here</Text>
+            <View style={createStyles(theme).emptyContainer}>
+              <Ionicons name="trending-up-outline" size={64} color={theme.textMuted} />
+              <Text style={createStyles(theme).emptyText}>No positions</Text>
+              <Text style={createStyles(theme).emptySubtext}>Your intraday positions will appear here</Text>
             </View>
           ) : (
             <View>
@@ -235,10 +223,10 @@ export default function PortfolioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -247,9 +235,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -265,7 +253,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 56 : 52,
     borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 6,
@@ -274,24 +262,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Platform.OS === 'ios' ? 24 : 22,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: colors.text,
+    color: theme.text,
     ...(Platform.OS === 'ios' && {
       letterSpacing: 0.5,
-      textShadowColor: 'rgba(255, 255, 255, 0.1)',
+      textShadowColor: theme.text + '1A',
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     }),
   },
   modeBadge: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.primary,
   },
   modeText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -300,11 +288,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   summaryCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -315,7 +303,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -328,21 +316,21 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     marginBottom: 4,
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   tabs: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.card,
+    borderBottomColor: theme.card,
   },
   tab: {
     flex: 1,
@@ -352,15 +340,15 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: colors.primary,
+    borderBottomColor: theme.primary,
   },
   tabText: {
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     fontSize: 14,
     fontWeight: '600',
   },
   activeTabText: {
-    color: colors.primary,
+    color: theme.primary,
   },
   listContainer: {
     padding: 16,
@@ -371,16 +359,15 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   emptyText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtext: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
   },
 });
-

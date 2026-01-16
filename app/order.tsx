@@ -15,18 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMarketStore } from '../src/store/useMarketStore';
 import { useTradingStore } from '../src/store/useTradingStore';
 import { OrderType, ProductType, OrderSide } from '../src/types';
-
-const colors = {
-  primary: '#00D4FF',
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
+import { useTheme } from '../src/contexts/ThemeContext';
 
 type GTTCondition = 'SINGLE' | 'OCO';
 
@@ -34,6 +23,7 @@ export default function OrderScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const symbol = params.symbol as string;
+  const { theme } = useTheme();
   
   const { stocks } = useMarketStore();
   const { placeOrder, funds, mode } = useTradingStore();
@@ -193,68 +183,68 @@ export default function OrderScreen() {
   
   if (!stock) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={createStyles(theme).container}>
+        <View style={createStyles(theme).header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="close" size={28} color={colors.text} />
+            <Ionicons name="close" size={28} color={theme.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Place Order</Text>
+          <Text style={createStyles(theme).headerTitle}>Place Order</Text>
           <View style={{ width: 28 }} />
         </View>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Stock not found</Text>
+        <View style={createStyles(theme).emptyContainer}>
+          <Text style={createStyles(theme).emptyText}>Stock not found</Text>
         </View>
       </View>
     );
   }
   
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={createStyles(theme).container}>
+      <View style={createStyles(theme).header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={28} color={colors.text} />
+          <Ionicons name="close" size={28} color={theme.text} />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{stock.symbol}</Text>
-          <Text style={styles.headerSubtitle}>₹{stock.lastPrice.toFixed(2)}</Text>
+        <View style={createStyles(theme).headerCenter}>
+          <Text style={createStyles(theme).headerTitle}>{stock.symbol}</Text>
+          <Text style={createStyles(theme).headerSubtitle}>₹{stock.lastPrice.toFixed(2)}</Text>
         </View>
         <TouchableOpacity onPress={() => setShowAdvanced(!showAdvanced)}>
-          <Ionicons name="settings-outline" size={24} color={colors.primary} />
+          <Ionicons name="settings-outline" size={24} color={theme.primary} />
         </TouchableOpacity>
       </View>
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={createStyles(theme).content} showsVerticalScrollIndicator={false}>
         {/* Buy/Sell Toggle */}
-        <View style={styles.toggleContainer}>
+        <View style={createStyles(theme).toggleContainer}>
           <TouchableOpacity
-            style={[styles.toggleButton, orderSide === 'BUY' && styles.toggleButtonBuy]}
+            style={[createStyles(theme).toggleButton, orderSide === 'BUY' && createStyles(theme).toggleButtonBuy]}
             onPress={() => setOrderSide('BUY')}
           >
-            <Text style={[styles.toggleText, orderSide === 'BUY' && styles.toggleTextActive]}>
+            <Text style={[createStyles(theme).toggleText, orderSide === 'BUY' && createStyles(theme).toggleTextActive]}>
               BUY
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.toggleButton, orderSide === 'SELL' && styles.toggleButtonSell]}
+            style={[createStyles(theme).toggleButton, orderSide === 'SELL' && createStyles(theme).toggleButtonSell]}
             onPress={() => setOrderSide('SELL')}
           >
-            <Text style={[styles.toggleText, orderSide === 'SELL' && styles.toggleTextActive]}>
+            <Text style={[createStyles(theme).toggleText, orderSide === 'SELL' && createStyles(theme).toggleTextActive]}>
               SELL
             </Text>
           </TouchableOpacity>
         </View>
         
         {/* Order Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Order Type</Text>
-          <View style={styles.chipContainer}>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Order Type</Text>
+          <View style={createStyles(theme).chipContainer}>
             {(['MARKET', 'LIMIT', 'SL', 'SL-M'] as OrderType[]).map((type) => (
               <TouchableOpacity
                 key={type}
-                style={[styles.chip, orderType === type && styles.chipActive]}
+                style={[createStyles(theme).chip, orderType === type && createStyles(theme).chipActive]}
                 onPress={() => setOrderType(type)}
               >
-                <Text style={[styles.chipText, orderType === type && styles.chipTextActive]}>
+                <Text style={[createStyles(theme).chipText, orderType === type && createStyles(theme).chipTextActive]}>
                   {type}
                 </Text>
               </TouchableOpacity>
@@ -263,20 +253,20 @@ export default function OrderScreen() {
         </View>
         
         {/* Product Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Product</Text>
-          <View style={styles.chipContainer}>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Product</Text>
+          <View style={createStyles(theme).chipContainer}>
             {(['CNC', 'MIS', 'NRML'] as ProductType[]).map((type) => (
               <TouchableOpacity
                 key={type}
-                style={[styles.chip, productType === type && styles.chipActive]}
+                style={[createStyles(theme).chip, productType === type && createStyles(theme).chipActive]}
                 onPress={() => setProductType(type)}
               >
-                <Text style={[styles.chipText, productType === type && styles.chipTextActive]}>
+                <Text style={[createStyles(theme).chipText, productType === type && createStyles(theme).chipTextActive]}>
                   {type}
                 </Text>
                 {type === 'MIS' && (
-                  <Text style={styles.chipSubtext}>5x</Text>
+                  <Text style={createStyles(theme).chipSubtext}>5x</Text>
                 )}
               </TouchableOpacity>
             ))}
@@ -284,84 +274,84 @@ export default function OrderScreen() {
         </View>
         
         {/* Quantity */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Quantity</Text>
-          <View style={styles.inputRow}>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Quantity</Text>
+          <View style={createStyles(theme).inputRow}>
             <TouchableOpacity
-              style={styles.quantityButton}
+              style={createStyles(theme).quantityButton}
               onPress={() => setQuantity(Math.max(1, parseInt(quantity) - 1).toString())}
             >
-              <Ionicons name="remove" size={20} color={colors.text} />
+              <Ionicons name="remove" size={20} color={theme.text} />
             </TouchableOpacity>
             <TextInput
-              style={styles.input}
+              style={createStyles(theme).input}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="numeric"
               placeholder="Qty"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.textMuted}
             />
             <TouchableOpacity
-              style={styles.quantityButton}
+              style={createStyles(theme).quantityButton}
               onPress={() => setQuantity((parseInt(quantity) + 1).toString())}
             >
-              <Ionicons name="add" size={20} color={colors.text} />
+              <Ionicons name="add" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
         
         {/* Price (for LIMIT and SL orders) */}
         {(orderType === 'LIMIT' || orderType === 'SL') && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Price</Text>
+          <View style={createStyles(theme).section}>
+            <Text style={createStyles(theme).sectionLabel}>Price</Text>
             <TextInput
-              style={styles.input}
+              style={createStyles(theme).input}
               value={price}
               onChangeText={setPrice}
               keyboardType="decimal-pad"
               placeholder="Enter price"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.textMuted}
             />
           </View>
         )}
         
         {/* Trigger Price (for SL and SL-M orders) */}
         {(orderType === 'SL' || orderType === 'SL-M') && (
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Trigger Price</Text>
+          <View style={createStyles(theme).section}>
+            <Text style={createStyles(theme).sectionLabel}>Trigger Price</Text>
             <TextInput
-              style={styles.input}
+              style={createStyles(theme).input}
               value={triggerPrice}
               onChangeText={setTriggerPrice}
               keyboardType="decimal-pad"
               placeholder="Enter trigger price"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.textMuted}
             />
           </View>
         )}
         
         {/* Advanced Options */}
         {showAdvanced && (
-          <View style={styles.advancedSection}>
-            <Text style={styles.sectionTitle}>Advanced Options</Text>
+          <View style={createStyles(theme).advancedSection}>
+            <Text style={createStyles(theme).sectionTitle}>Advanced Options</Text>
             
             {/* Validity */}
-            <View style={styles.optionRow}>
-              <Text style={styles.optionLabel}>Validity</Text>
-              <View style={styles.chipContainer}>
+            <View style={createStyles(theme).optionRow}>
+              <Text style={createStyles(theme).optionLabel}>Validity</Text>
+              <View style={createStyles(theme).chipContainer}>
                 <TouchableOpacity
-                  style={[styles.chipSmall, validity === 'DAY' && styles.chipActive]}
+                  style={[createStyles(theme).chipSmall, validity === 'DAY' && createStyles(theme).chipActive]}
                   onPress={() => setValidity('DAY')}
                 >
-                  <Text style={[styles.chipText, validity === 'DAY' && styles.chipTextActive]}>
+                  <Text style={[createStyles(theme).chipText, validity === 'DAY' && createStyles(theme).chipTextActive]}>
                     DAY
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.chipSmall, validity === 'IOC' && styles.chipActive]}
+                  style={[createStyles(theme).chipSmall, validity === 'IOC' && createStyles(theme).chipActive]}
                   onPress={() => setValidity('IOC')}
                 >
-                  <Text style={[styles.chipText, validity === 'IOC' && styles.chipTextActive]}>
+                  <Text style={[createStyles(theme).chipText, validity === 'IOC' && createStyles(theme).chipTextActive]}>
                     IOC
                   </Text>
                 </TouchableOpacity>
@@ -369,105 +359,105 @@ export default function OrderScreen() {
             </View>
             
             {/* AMO */}
-            <View style={styles.optionRow}>
+            <View style={createStyles(theme).optionRow}>
               <View>
-                <Text style={styles.optionLabel}>After Market Order (AMO)</Text>
-                <Text style={styles.optionSubtext}>Place order after market hours</Text>
+                <Text style={createStyles(theme).optionLabel}>After Market Order (AMO)</Text>
+                <Text style={createStyles(theme).optionSubtext}>Place order after market hours</Text>
               </View>
               <Switch
                 value={isAMO}
                 onValueChange={setIsAMO}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor={colors.text}
+                trackColor={{ false: theme.border, true: theme.primary }}
+                thumbColor={theme.text}
               />
             </View>
             
             {/* GTT */}
-            <View style={styles.optionRow}>
+            <View style={createStyles(theme).optionRow}>
               <View>
-                <Text style={styles.optionLabel}>Good Till Triggered (GTT)</Text>
-                <Text style={styles.optionSubtext}>Trigger order at future price</Text>
+                <Text style={createStyles(theme).optionLabel}>Good Till Triggered (GTT)</Text>
+                <Text style={createStyles(theme).optionSubtext}>Trigger order at future price</Text>
               </View>
               <Switch
                 value={isGTT}
                 onValueChange={setIsGTT}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor={colors.text}
+                trackColor={{ false: theme.border, true: theme.primary }}
+                thumbColor={theme.text}
               />
             </View>
             
             {isGTT && (
-              <View style={styles.gttContainer}>
-                <View style={styles.chipContainer}>
+              <View style={createStyles(theme).gttContainer}>
+                <View style={createStyles(theme).chipContainer}>
                   <TouchableOpacity
-                    style={[styles.chip, gttCondition === 'SINGLE' && styles.chipActive]}
+                    style={[createStyles(theme).chip, gttCondition === 'SINGLE' && createStyles(theme).chipActive]}
                     onPress={() => setGttCondition('SINGLE')}
                   >
-                    <Text style={[styles.chipText, gttCondition === 'SINGLE' && styles.chipTextActive]}>
+                    <Text style={[createStyles(theme).chipText, gttCondition === 'SINGLE' && createStyles(theme).chipTextActive]}>
                       Single
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.chip, gttCondition === 'OCO' && styles.chipActive]}
+                    style={[createStyles(theme).chip, gttCondition === 'OCO' && createStyles(theme).chipActive]}
                     onPress={() => setGttCondition('OCO')}
                   >
-                    <Text style={[styles.chipText, gttCondition === 'OCO' && styles.chipTextActive]}>
+                    <Text style={[createStyles(theme).chipText, gttCondition === 'OCO' && createStyles(theme).chipTextActive]}>
                       OCO
                     </Text>
                   </TouchableOpacity>
                 </View>
                 <TextInput
-                  style={styles.input}
+                  style={createStyles(theme).input}
                   value={gttTriggerPrice}
                   onChangeText={setGttTriggerPrice}
                   keyboardType="decimal-pad"
                   placeholder="GTT Trigger Price"
-                  placeholderTextColor={colors.textMuted}
+                  placeholderTextColor={theme.textMuted}
                 />
                 {gttCondition === 'OCO' && (
                   <TextInput
-                    style={styles.input}
+                    style={createStyles(theme).input}
                     value={gttLimitPrice}
                     onChangeText={setGttLimitPrice}
                     keyboardType="decimal-pad"
                     placeholder="GTT Limit Price"
-                    placeholderTextColor={colors.textMuted}
+                    placeholderTextColor={theme.textMuted}
                   />
                 )}
               </View>
             )}
             
             {/* Iceberg Order */}
-            <View style={styles.optionRow}>
+            <View style={createStyles(theme).optionRow}>
               <View>
-                <Text style={styles.optionLabel}>Iceberg Order</Text>
-                <Text style={styles.optionSubtext}>Split order into smaller parts</Text>
+                <Text style={createStyles(theme).optionLabel}>Iceberg Order</Text>
+                <Text style={createStyles(theme).optionSubtext}>Split order into smaller parts</Text>
               </View>
               <Switch
                 value={isIceberg}
                 onValueChange={setIsIceberg}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor={colors.text}
+                trackColor={{ false: theme.border, true: theme.primary }}
+                thumbColor={theme.text}
               />
             </View>
             
             {isIceberg && (
-              <View style={styles.icebergContainer}>
+              <View style={createStyles(theme).icebergContainer}>
                 <TextInput
-                  style={styles.input}
+                  style={createStyles(theme).input}
                   value={icebergQuantity}
                   onChangeText={setIcebergQuantity}
                   keyboardType="numeric"
                   placeholder="Quantity per leg"
-                  placeholderTextColor={colors.textMuted}
+                  placeholderTextColor={theme.textMuted}
                 />
                 <TextInput
-                  style={styles.input}
+                  style={createStyles(theme).input}
                   value={icebergLegs}
                   onChangeText={setIcebergLegs}
                   keyboardType="numeric"
                   placeholder="Number of legs"
-                  placeholderTextColor={colors.textMuted}
+                  placeholderTextColor={theme.textMuted}
                 />
               </View>
             )}
@@ -475,39 +465,39 @@ export default function OrderScreen() {
         )}
         
         {/* Order Summary */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Value</Text>
-            <Text style={styles.summaryValue}>₹{calculateTotal().toFixed(2)}</Text>
+        <View style={createStyles(theme).summaryCard}>
+          <View style={createStyles(theme).summaryRow}>
+            <Text style={createStyles(theme).summaryLabel}>Total Value</Text>
+            <Text style={createStyles(theme).summaryValue}>₹{calculateTotal().toFixed(2)}</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Required Margin</Text>
-            <Text style={styles.summaryValue}>₹{calculateMargin().toFixed(2)}</Text>
+          <View style={createStyles(theme).summaryRow}>
+            <Text style={createStyles(theme).summaryLabel}>Required Margin</Text>
+            <Text style={createStyles(theme).summaryValue}>₹{calculateMargin().toFixed(2)}</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Available Funds</Text>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>
+          <View style={createStyles(theme).summaryRow}>
+            <Text style={createStyles(theme).summaryLabel}>Available Funds</Text>
+            <Text style={[createStyles(theme).summaryValue, { color: theme.primary }]}>
               ₹{funds.available.toFixed(2)}
             </Text>
           </View>
           {mode === 'PAPER' && (
-            <View style={styles.paperBadge}>
-              <Text style={styles.paperText}>📝 Paper Trading Mode</Text>
+            <View style={createStyles(theme).paperBadge}>
+              <Text style={createStyles(theme).paperText}>📝 Paper Trading Mode</Text>
             </View>
           )}
         </View>
       </ScrollView>
       
       {/* Place Order Button */}
-      <View style={styles.footer}>
+      <View style={createStyles(theme).footer}>
         <TouchableOpacity
           style={[
-            styles.placeOrderButton,
-            { backgroundColor: orderSide === 'BUY' ? colors.profit : colors.loss }
+            createStyles(theme).placeOrderButton,
+            { backgroundColor: orderSide === 'BUY' ? theme.profit : theme.loss }
           ]}
           onPress={handlePlaceOrder}
         >
-          <Text style={styles.placeOrderText}>
+          <Text style={createStyles(theme).placeOrderText}>
             {orderSide} {quantity} @ {orderType === 'MARKET' || orderType === 'SL-M' ? 'Market' : `₹${price}`}
           </Text>
         </TouchableOpacity>
@@ -516,10 +506,10 @@ export default function OrderScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -528,9 +518,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 16,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: theme.border,
   },
   headerCenter: {
     alignItems: 'center',
@@ -538,11 +528,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   content: {
@@ -555,27 +545,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   toggleButton: {
     flex: 1,
     paddingVertical: 16,
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
   },
   toggleButtonBuy: {
-    backgroundColor: colors.profit,
+    backgroundColor: theme.profit,
   },
   toggleButtonSell: {
-    backgroundColor: colors.loss,
+    backgroundColor: theme.loss,
   },
   toggleText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   toggleTextActive: {
-    color: colors.text,
+    color: theme.text,
   },
   section: {
     marginBottom: 16,
@@ -583,13 +573,13 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginBottom: 6,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 12,
   },
   chipContainer: {
@@ -601,33 +591,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   chipSmall: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   chipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   chipTextActive: {
-    color: colors.text,
+    color: theme.text,
   },
   chipSubtext: {
     fontSize: 10,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   inputRow: {
@@ -637,32 +627,32 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    color: colors.text,
+    color: theme.text,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   quantityButton: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   advancedSection: {
     marginTop: 8,
     padding: 16,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   optionRow: {
     flexDirection: 'row',
@@ -673,11 +663,11 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
   },
   optionSubtext: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   gttContainer: {
@@ -689,13 +679,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   summaryCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginTop: 24,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -704,32 +694,32 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   paperBadge: {
     marginTop: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderRadius: 8,
     alignItems: 'center',
   },
   paperText: {
     fontSize: 12,
-    color: colors.primary,
+    color: theme.primary,
     fontWeight: '600',
   },
   footer: {
     padding: 16,
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
   },
   placeOrderButton: {
     paddingVertical: 16,
@@ -739,7 +729,7 @@ const styles = StyleSheet.create({
   placeOrderText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   emptyContainer: {
     flex: 1,
@@ -748,6 +738,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
 });

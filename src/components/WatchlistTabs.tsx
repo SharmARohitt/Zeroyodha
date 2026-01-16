@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Watchlist } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface WatchlistTabsProps {
   watchlists: Watchlist[];
@@ -16,32 +17,34 @@ export default function WatchlistTabs({
   onTabPress,
   onAddWatchlist,
 }: WatchlistTabsProps) {
+  const { theme } = useTheme();
+  
   if (watchlists.length === 0) {
     return null;
   }
 
   return (
-    <View style={styles.container}>
+    <View style={createStyles(theme).container}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={createStyles(theme).scrollContent}
       >
         {watchlists.map((watchlist) => {
           const isActive = watchlist.id === currentWatchlist;
           return (
             <TouchableOpacity
               key={watchlist.id}
-              style={[styles.tab, isActive && styles.tabActive]}
+              style={[createStyles(theme).tab, isActive && createStyles(theme).tabActive]}
               onPress={() => onTabPress(watchlist.id)}
               activeOpacity={0.7}
             >
               <Text
-                style={[styles.tabText, isActive && styles.tabTextActive]}
+                style={[createStyles(theme).tabText, isActive && createStyles(theme).tabTextActive]}
               >
                 {watchlist.name}
               </Text>
-              {isActive && <View style={styles.indicator} />}
+              {isActive && <View style={createStyles(theme).indicator} />}
             </TouchableOpacity>
           );
         })}
@@ -49,12 +52,12 @@ export default function WatchlistTabs({
         {/* Add Watchlist Button */}
         {onAddWatchlist && (
           <TouchableOpacity
-            style={styles.addButton}
+            style={createStyles(theme).addButton}
             onPress={onAddWatchlist}
             activeOpacity={0.7}
           >
-            <Ionicons name="add-circle" size={20} color="#00D4FF" />
-            <Text style={styles.addButtonText}>New</Text>
+            <Ionicons name="add-circle" size={20} color={theme.primary} />
+            <Text style={createStyles(theme).addButtonText}>New</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -62,11 +65,11 @@ export default function WatchlistTabs({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#0A0A0A',
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#1A1A1A',
+    borderBottomColor: theme.border,
   },
   scrollContent: {
     paddingHorizontal: 16,
@@ -85,10 +88,10 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: theme.textMuted,
   },
   tabTextActive: {
-    color: '#2962FF',
+    color: theme.primary,
     fontWeight: '600',
   },
   indicator: {
@@ -97,7 +100,7 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     height: 2,
-    backgroundColor: '#2962FF',
+    backgroundColor: theme.primary,
     borderRadius: 1,
   },
   addButton: {
@@ -111,7 +114,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#00D4FF',
+    color: theme.primary,
   },
 });
 

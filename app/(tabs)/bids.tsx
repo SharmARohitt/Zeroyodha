@@ -18,21 +18,7 @@ import { newsService, NewsArticle } from '../../src/services/newsService';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRouter } from 'expo-router';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  warning: '#FFC107',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-  textSecondary: '#999999',
-};
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 // Mock IPO data
 const mockIPOs: IPO[] = [
@@ -64,6 +50,7 @@ const mockIPOs: IPO[] = [
 
 export default function BidsScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState<'IPOS' | 'GSEC' | 'MUTUAL_FUNDS' | 'NEWS'>('IPOS');
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -132,74 +119,74 @@ export default function BidsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
+    <View style={createStyles(theme).container}>
+      <View style={createStyles(theme).header}>
+        <View style={createStyles(theme).headerLeft}>
           <Animated.View style={{ transform: [{ scale: logoScale }] }}>
             <Image
               source={require('../../assets/images/Wealth.png')}
-              style={styles.logo}
+              style={createStyles(theme).logo}
               resizeMode="contain"
             />
           </Animated.View>
-          <Text style={styles.title}>Hey {getUserName()}!</Text>
+          <Text style={createStyles(theme).title}>Hey {getUserName()}!</Text>
         </View>
-        <TouchableOpacity style={styles.headerButton}>
-          <Ionicons name="notifications-outline" size={24} color={colors.text} />
+        <TouchableOpacity style={createStyles(theme).headerButton}>
+          <Ionicons name="notifications-outline" size={24} color={theme.text} />
         </TouchableOpacity>
       </View>
 
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
 
-      <View style={styles.tabs}>
+      <View style={createStyles(theme).tabs}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'IPOS' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'IPOS' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('IPOS')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'IPOS' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'IPOS' && createStyles(theme).activeTabText,
             ]}
           >
             IPOs
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'GSEC' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'GSEC' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('GSEC')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'GSEC' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'GSEC' && createStyles(theme).activeTabText,
             ]}
           >
             G-Secs
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'MUTUAL_FUNDS' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'MUTUAL_FUNDS' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('MUTUAL_FUNDS')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'MUTUAL_FUNDS' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'MUTUAL_FUNDS' && createStyles(theme).activeTabText,
             ]}
           >
             Mutual Funds
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'NEWS' && styles.activeTab]}
+          style={[createStyles(theme).tab, activeTab === 'NEWS' && createStyles(theme).activeTab]}
           onPress={() => setActiveTab('NEWS')}
         >
           <Text
             style={[
-              styles.tabText,
-              activeTab === 'NEWS' && styles.activeTabText,
+              createStyles(theme).tabText,
+              activeTab === 'NEWS' && createStyles(theme).activeTabText,
             ]}
           >
             News
@@ -211,68 +198,68 @@ export default function BidsScreen() {
         <FlatList
           data={mockIPOs}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <IPOCard ipo={item} onPress={() => handleIPOPress(item)} />}
-          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => <IPOCard ipo={item} onPress={() => handleIPOPress(item)} theme={theme} />}
+          contentContainerStyle={createStyles(theme).listContent}
         />
       )}
 
       {activeTab === 'GSEC' && (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="trending-up-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>Government Securities</Text>
-          <Text style={styles.emptySubtext}>Coming soon in paper trading mode</Text>
+        <View style={createStyles(theme).emptyContainer}>
+          <Ionicons name="trending-up-outline" size={64} color={theme.textMuted} />
+          <Text style={createStyles(theme).emptyText}>Government Securities</Text>
+          <Text style={createStyles(theme).emptySubtext}>Coming soon in paper trading mode</Text>
         </View>
       )}
 
       {activeTab === 'MUTUAL_FUNDS' && (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="pie-chart-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>Mutual Funds</Text>
-          <Text style={styles.emptySubtext}>SIP and lump sum investments</Text>
+        <View style={createStyles(theme).emptyContainer}>
+          <Ionicons name="pie-chart-outline" size={64} color={theme.textMuted} />
+          <Text style={createStyles(theme).emptyText}>Mutual Funds</Text>
+          <Text style={createStyles(theme).emptySubtext}>SIP and lump sum investments</Text>
         </View>
       )}
 
       {activeTab === 'NEWS' && (
         <ScrollView
-          contentContainerStyle={styles.newsContainer}
+          contentContainerStyle={createStyles(theme).newsContainer}
           refreshControl={
             <RefreshControl
               refreshing={newsLoading}
               onRefresh={loadNews}
-              tintColor="#2962FF"
+              tintColor={theme.primary}
             />
           }
         >
           {news.length === 0 && !newsLoading ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="newspaper-outline" size={64} color="#666" />
-              <Text style={styles.emptyText}>No news available</Text>
+            <View style={createStyles(theme).emptyContainer}>
+              <Ionicons name="newspaper-outline" size={64} color={theme.textMuted} />
+              <Text style={createStyles(theme).emptyText}>No news available</Text>
             </View>
           ) : (
             news.map((article) => (
-              <View key={article.id} style={styles.newsCard}>
-                <View style={styles.newsHeader}>
-                  <Text style={styles.newsSource}>{article.source}</Text>
-                  <Text style={styles.newsDate}>
+              <View key={article.id} style={createStyles(theme).newsCard}>
+                <View style={createStyles(theme).newsHeader}>
+                  <Text style={createStyles(theme).newsSource}>{article.source}</Text>
+                  <Text style={createStyles(theme).newsDate}>
                     {format(new Date(article.datetime), 'dd MMM, yyyy')}
                   </Text>
                 </View>
-                <Text style={styles.newsTitle}>{article.headline}</Text>
+                <Text style={createStyles(theme).newsTitle}>{article.headline}</Text>
                 {article.summary && (
-                  <Text style={styles.newsContent} numberOfLines={4}>
+                  <Text style={createStyles(theme).newsContent} numberOfLines={4}>
                     {article.summary}
                   </Text>
                 )}
                 {article.url && article.url !== '#' && (
                   <TouchableOpacity
-                    style={styles.readMoreButton}
+                    style={createStyles(theme).readMoreButton}
                     onPress={() => {
                       // Handle news URL opening
                       console.log('Open news:', article.url);
                     }}
                   >
-                    <Text style={styles.readMoreText}>Read More</Text>
-                    <Ionicons name="arrow-forward" size={16} color="#2962FF" />
+                    <Text style={createStyles(theme).readMoreText}>Read More</Text>
+                    <Ionicons name="arrow-forward" size={16} color={theme.primary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -284,59 +271,59 @@ export default function BidsScreen() {
   );
 }
 
-function IPOCard({ ipo, onPress }: { ipo: IPO; onPress: () => void }) {
+function IPOCard({ ipo, onPress, theme }: { ipo: IPO; onPress: () => void; theme: any }) {
   const statusColors: Record<string, string> = {
-    UPCOMING: '#FFC107',
-    OPEN: '#00C853',
-    CLOSED: '#999',
-    LISTED: '#2962FF',
+    UPCOMING: theme.warning,
+    OPEN: theme.success,
+    CLOSED: theme.textMuted,
+    LISTED: theme.primary,
   };
 
   return (
     <TouchableOpacity 
-      style={styles.ipoCard}
+      style={createStyles(theme).ipoCard}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.ipoHeader}>
+      <View style={createStyles(theme).ipoHeader}>
         <View>
-          <Text style={styles.ipoName}>{ipo.name}</Text>
-          <Text style={styles.ipoSymbol}>{ipo.symbol} • {ipo.exchange}</Text>
+          <Text style={createStyles(theme).ipoName}>{ipo.name}</Text>
+          <Text style={createStyles(theme).ipoSymbol}>{ipo.symbol} • {ipo.exchange}</Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: statusColors[ipo.status] }]}>
-          <Text style={styles.statusText}>{ipo.status}</Text>
+        <View style={[createStyles(theme).statusBadge, { backgroundColor: statusColors[ipo.status] }]}>
+          <Text style={createStyles(theme).statusText}>{ipo.status}</Text>
         </View>
       </View>
 
-      <View style={styles.ipoDetails}>
-        <View style={styles.ipoRow}>
-          <Text style={styles.ipoLabel}>Price Range:</Text>
-          <Text style={styles.ipoValue}>
+      <View style={createStyles(theme).ipoDetails}>
+        <View style={createStyles(theme).ipoRow}>
+          <Text style={createStyles(theme).ipoLabel}>Price Range:</Text>
+          <Text style={createStyles(theme).ipoValue}>
             ₹{ipo.priceRange.min} - ₹{ipo.priceRange.max}
           </Text>
         </View>
-        <View style={styles.ipoRow}>
-          <Text style={styles.ipoLabel}>Issue Size:</Text>
-          <Text style={styles.ipoValue}>
+        <View style={createStyles(theme).ipoRow}>
+          <Text style={createStyles(theme).ipoLabel}>Issue Size:</Text>
+          <Text style={createStyles(theme).ipoValue}>
             ₹{(ipo.issueSize / 1000000000).toFixed(2)}B
           </Text>
         </View>
-        <View style={styles.ipoRow}>
-          <Text style={styles.ipoLabel}>Open Date:</Text>
-          <Text style={styles.ipoValue}>
+        <View style={createStyles(theme).ipoRow}>
+          <Text style={createStyles(theme).ipoLabel}>Open Date:</Text>
+          <Text style={createStyles(theme).ipoValue}>
             {format(ipo.openDate, 'dd MMM yyyy')}
           </Text>
         </View>
-        <View style={styles.ipoRow}>
-          <Text style={styles.ipoLabel}>Close Date:</Text>
-          <Text style={styles.ipoValue}>
+        <View style={createStyles(theme).ipoRow}>
+          <Text style={createStyles(theme).ipoLabel}>Close Date:</Text>
+          <Text style={createStyles(theme).ipoValue}>
             {format(ipo.closeDate, 'dd MMM yyyy')}
           </Text>
         </View>
         {ipo.status === 'OPEN' && (
-          <View style={styles.bidButtonContainer}>
-            <Ionicons name="arrow-forward-circle" size={24} color={colors.primary} />
-            <Text style={styles.bidButtonText}>Tap to Place Bid</Text>
+          <View style={createStyles(theme).bidButtonContainer}>
+            <Ionicons name="arrow-forward-circle" size={24} color={theme.primary} />
+            <Text style={createStyles(theme).bidButtonText}>Tap to Place Bid</Text>
           </View>
         )}
       </View>
@@ -344,10 +331,10 @@ function IPOCard({ ipo, onPress }: { ipo: IPO; onPress: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -356,9 +343,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -374,7 +361,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 56 : 52,
     borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 6,
@@ -383,10 +370,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Platform.OS === 'ios' ? 24 : 22,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: colors.text,
+    color: theme.text,
     ...(Platform.OS === 'ios' && {
       letterSpacing: 0.5,
-      textShadowColor: 'rgba(255, 255, 255, 0.1)',
+      textShadowColor: theme.text + '1A',
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     }),
@@ -398,9 +385,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.card,
+    borderBottomColor: theme.card,
   },
   tab: {
     flex: 1,
@@ -410,15 +397,15 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: colors.primary,
+    borderBottomColor: theme.primary,
   },
   tabText: {
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     fontSize: 12,
     fontWeight: '600',
   },
   activeTabText: {
-    color: colors.primary,
+    color: theme.primary,
   },
   listContent: {
     padding: 16,
@@ -431,23 +418,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 18,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtext: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 14,
     marginTop: 8,
   },
   ipoCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   ipoHeader: {
     flexDirection: 'row',
@@ -458,12 +445,12 @@ const styles = StyleSheet.create({
   ipoName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 4,
   },
   ipoSymbol: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -471,14 +458,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   ipoDetails: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
     paddingTop: 12,
   },
   ipoRow: {
@@ -488,11 +475,11 @@ const styles = StyleSheet.create({
   },
   ipoLabel: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: theme.textSecondary,
   },
   ipoValue: {
     fontSize: 14,
-    color: colors.text,
+    color: theme.text,
     fontWeight: '600',
   },
   bidButtonContainer: {
@@ -503,10 +490,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
   },
   bidButtonText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -515,12 +502,12 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   newsCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   newsHeader: {
     flexDirection: 'row',
@@ -530,24 +517,24 @@ const styles = StyleSheet.create({
   },
   newsSource: {
     fontSize: 12,
-    color: colors.primary,
+    color: theme.primary,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   newsDate: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   newsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 12,
     lineHeight: 24,
   },
   newsContent: {
     fontSize: 14,
-    color: '#CCCCCC',
+    color: theme.textSecondary,
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -557,10 +544,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   readMoreText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 14,
     fontWeight: '600',
     marginRight: 4,
   },
 });
-

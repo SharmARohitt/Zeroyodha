@@ -4,62 +4,69 @@ const LOGODEV_PUBLISHABLE_KEY = 'pk_b3fjHh9gS_qpOFOx9YiESg';
 class BenzingaService {
   private logoCache: Map<string, string> = new Map();
 
+  // Stocks to skip logo fetching (use colored initials instead to prevent blinking)
+  private skipLogoFetch: Set<string> = new Set([
+    'SBIN', 'LICI', 'ULTRACEMCO', 'NESTLEIND', 'SUNPHARMA',
+    'ONGC', 'NTPC', 'POWERGRID', 'COALINDIA', 'TECHM',
+    'JSWSTEEL', 'TATASTEEL',
+  ]);
+
   // Direct high-quality logo URLs for stocks (fallback when Logo.dev doesn't have them)
   private directLogoUrls: Record<string, string> = {
-    // Indian Banks - High quality logos
-    'SBIN': 'https://logoeps.com/wp-content/uploads/2014/05/state-bank-india-sbi-vector-logo.png',
-    'PNB': 'https://seeklogo.com/images/P/punjab-national-bank-logo-AE0E0E0E0E-seeklogo.com.png',
-    'BANKBARODA': 'https://seeklogo.com/images/B/bank-of-baroda-logo-1F1F1F1F1F-seeklogo.com.png',
-    'UNIONBANK': 'https://seeklogo.com/images/U/union-bank-of-india-logo-2E2E2E2E2E-seeklogo.com.png',
-    'CANBK': 'https://seeklogo.com/images/C/canara-bank-logo-3D3D3D3D3D-seeklogo.com.png',
-    'INDUSINDBK': 'https://seeklogo.com/images/I/indusind-bank-logo-4C4C4C4C4C-seeklogo.com.png',
+    // Priority 12 stocks - Using reliable static URLs to prevent blinking
+    'SBIN': 'https://logo.clearbit.com/sbi.co.in',
+    'LICI': 'https://logo.clearbit.com/licindia.in',
+    'ULTRACEMCO': 'https://logo.clearbit.com/ultratechcement.com',
+    'NESTLEIND': 'https://logo.clearbit.com/nestle.in',
+    'SUNPHARMA': 'https://logo.clearbit.com/sunpharma.com',
+    'ONGC': 'https://logo.clearbit.com/ongcindia.com',
+    'NTPC': 'https://logo.clearbit.com/ntpc.co.in',
+    'POWERGRID': 'https://logo.clearbit.com/powergridindia.com',
+    'COALINDIA': 'https://logo.clearbit.com/coalindia.in',
+    'TECHM': 'https://logo.clearbit.com/techmahindra.com',
+    'JSWSTEEL': 'https://logo.clearbit.com/jsw.in',
+    'TATASTEEL': 'https://logo.clearbit.com/tatasteel.com',
     
-    // IT Companies
-    'TECHM': 'https://seeklogo.com/images/T/tech-mahindra-logo-5E5E5E5E5E-seeklogo.com.png',
+    // Other Indian Banks
+    'PNB': 'https://logo.clearbit.com/pnbindia.in',
+    'BANKBARODA': 'https://logo.clearbit.com/bankofbaroda.in',
+    'UNIONBANK': 'https://logo.clearbit.com/unionbankofindia.co.in',
+    'CANBK': 'https://logo.clearbit.com/canarabank.com',
+    'INDUSINDBK': 'https://logo.clearbit.com/indusind.com',
     
     // Pharma
-    'SUNPHARMA': 'https://seeklogo.com/images/S/sun-pharma-logo-6F6F6F6F6F-seeklogo.com.png',
-    'CIPLA': 'https://seeklogo.com/images/C/cipla-logo-7G7G7G7G7G-seeklogo.com.png',
-    'DRREDDY': 'https://seeklogo.com/images/D/dr-reddys-logo-8H8H8H8H8H-seeklogo.com.png',
-    'DIVISLAB': 'https://seeklogo.com/images/D/divis-laboratories-logo-9I9I9I9I9I-seeklogo.com.png',
+    'CIPLA': 'https://logo.clearbit.com/cipla.com',
+    'DRREDDY': 'https://logo.clearbit.com/drreddys.com',
+    'DIVISLAB': 'https://logo.clearbit.com/divilabs.com',
     
     // Power & Energy
-    'NTPC': 'https://seeklogo.com/images/N/ntpc-logo-0A0A0A0A0A-seeklogo.com.png',
-    'POWERGRID': 'https://seeklogo.com/images/P/power-grid-logo-1B1B1B1B1B-seeklogo.com.png',
-    'COALINDIA': 'https://seeklogo.com/images/C/coal-india-logo-2C2C2C2C2C-seeklogo.com.png',
-    'ONGC': 'https://seeklogo.com/images/O/ongc-logo-3D3D3D3D3D-seeklogo.com.png',
-    'IOC': 'https://seeklogo.com/images/I/indian-oil-logo-4E4E4E4E4E-seeklogo.com.png',
+    'IOC': 'https://logo.clearbit.com/iocl.com',
     
     // Cement
-    'ULTRACEMCO': 'https://seeklogo.com/images/U/ultratech-cement-logo-5F5F5F5F5F-seeklogo.com.png',
-    'SHREECEM': 'https://seeklogo.com/images/S/shree-cement-logo-6G6G6G6G6G-seeklogo.com.png',
-    'GRASIM': 'https://seeklogo.com/images/G/grasim-logo-7H7H7H7H7H-seeklogo.com.png',
+    'SHREECEM': 'https://logo.clearbit.com/shreecement.com',
+    'GRASIM': 'https://logo.clearbit.com/grasim.com',
     
     // Steel & Metals
-    'JSWSTEEL': 'https://seeklogo.com/images/J/jsw-steel-logo-8I8I8I8I8I-seeklogo.com.png',
-    'TATASTEEL': 'https://seeklogo.com/images/T/tata-steel-logo-9J9J9J9J9J-seeklogo.com.png',
-    'HINDALCO': 'https://seeklogo.com/images/H/hindalco-logo-0K0K0K0K0K-seeklogo.com.png',
-    'VEDL': 'https://seeklogo.com/images/V/vedanta-logo-1L1L1L1L1L-seeklogo.com.png',
+    'HINDALCO': 'https://logo.clearbit.com/hindalco.com',
+    'VEDL': 'https://logo.clearbit.com/vedantaresources.com',
     
     // FMCG
-    'NESTLEIND': 'https://seeklogo.com/images/N/nestle-logo-2M2M2M2M2M-seeklogo.com.png',
-    'BRITANNIA': 'https://seeklogo.com/images/B/britannia-logo-3N3N3N3N3N-seeklogo.com.png',
-    'MARICO': 'https://seeklogo.com/images/M/marico-logo-4O4O4O4O4O-seeklogo.com.png',
-    'TATACONSUM': 'https://seeklogo.com/images/T/tata-consumer-logo-5P5P5P5P5P-seeklogo.com.png',
+    'BRITANNIA': 'https://logo.clearbit.com/britannia.co.in',
+    'MARICO': 'https://logo.clearbit.com/marico.com',
+    'TATACONSUM': 'https://logo.clearbit.com/tataconsum.com',
     
     // Finance
-    'BAJAJFINSV': 'https://seeklogo.com/images/B/bajaj-finserv-logo-6Q6Q6Q6Q6Q-seeklogo.com.png',
-    'HDFCLIFE': 'https://seeklogo.com/images/H/hdfc-life-logo-7R7R7R7R7R-seeklogo.com.png',
-    'LICI': 'https://seeklogo.com/vector-logo/236964/lic-india',
+    'BAJAJFINSV': 'https://logo.clearbit.com/bajajfinserv.in',
+    'HDFCLIFE': 'https://logo.clearbit.com/hdfclife.com',
     
     // Auto
-    'EICHERMOT': 'https://seeklogo.com/images/E/eicher-motors-logo-9T9T9T9T9T-seeklogo.com.png',
-    'HEROMOTOCO': 'https://seeklogo.com/images/H/hero-motocorp-logo-0U0U0U0U0U-seeklogo.com.png',
-    'M&M': 'https://seeklogo.com/images/M/mahindra-logo-1V1V1V1V1V-seeklogo.com.png',
+    'EICHERMOT': 'https://logo.clearbit.com/eicher.in',
+    'HEROMOTOCO': 'https://logo.clearbit.com/heromotocorp.com',
+    'M&M': 'https://logo.clearbit.com/mahindra.com',
     
     // Others
-    'PIDILITIND': 'https://seeklogo.com/images/P/pidilite-logo-2W2W2W2W2W-seeklogo.com.png',
-    'APOLLOHOSP': 'https://seeklogo.com/images/A/apollo-hospitals-logo-3X3X3X3X3X-seeklogo.com.png',
+    'PIDILITIND': 'https://logo.clearbit.com/pidilite.com',
+    'APOLLOHOSP': 'https://logo.clearbit.com/apollohospitals.com',
   };
 
   // Map stock symbols to company domains for Logo.dev
@@ -142,12 +149,18 @@ class BenzingaService {
 
   /**
    * Fetch stock logo with comprehensive fallback system
-   * Priority: Cache > Direct URLs > Logo.dev API
+   * Priority: Cache > Skip List (null) > Direct URLs > Logo.dev API
    */
   async getStockLogo(symbol: string): Promise<string | null> {
     // Check cache first
     if (this.logoCache.has(symbol)) {
       return this.logoCache.get(symbol) || null;
+    }
+
+    // Skip logo fetching for problematic stocks (prevents blinking)
+    if (this.skipLogoFetch.has(symbol)) {
+      console.log(`⏭️  Skipping logo fetch for ${symbol} (using colored initials)`);
+      return null;
     }
 
     // Check if we have a direct logo URL (highest quality, instant)

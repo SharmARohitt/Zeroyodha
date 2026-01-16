@@ -12,7 +12,6 @@ import {
   Animated,
 } from 'react-native';
 import { useMarketStore } from '../../src/store/useMarketStore';
-import { useTradingStore } from '../../src/store/useTradingStore';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { Stock } from '../../src/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,22 +23,11 @@ import WatchlistTabs from '../../src/components/WatchlistTabs';
 import Toast from '../../src/components/Toast';
 import NotificationsModal from '../../src/components/NotificationsModal';
 import { notificationService } from '../../src/services/notificationService';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function WatchlistScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { 
     watchlists, 
     currentWatchlist, 
@@ -189,7 +177,7 @@ export default function WatchlistScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={createStyles(theme).container}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -206,43 +194,43 @@ export default function WatchlistScreen() {
       />
       
       {/* Header with Logo */}
-      <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
-        <View style={styles.headerLeft}>
+      <Animated.View style={[createStyles(theme).header, { opacity: headerOpacity }]}>
+        <View style={createStyles(theme).headerLeft}>
           <Animated.View style={{ transform: [{ scale: logoScale }] }}>
             <Image
               source={require('../../assets/images/Wealth.png')}
-              style={styles.logo}
+              style={createStyles(theme).logo}
               resizeMode="contain"
             />
           </Animated.View>
-          <Text style={styles.headerTitle}>Hey {getUserName()}!</Text>
+          <Text style={createStyles(theme).headerTitle}>Hey {getUserName()}!</Text>
         </View>
-        <View style={styles.headerRight}>
+        <View style={createStyles(theme).headerRight}>
           <TouchableOpacity 
-            style={styles.headerButton} 
+            style={createStyles(theme).headerButton} 
             onPress={handleNotificationPress}
             activeOpacity={0.7}
           >
             <Ionicons 
               name="notifications-outline" 
               size={Platform.OS === 'ios' ? 26 : 24} 
-              color={colors.text} 
+              color={theme.text} 
             />
             {unreadNotifications > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>{unreadNotifications}</Text>
+              <View style={createStyles(theme).notificationBadge}>
+                <Text style={createStyles(theme).notificationBadgeText}>{unreadNotifications}</Text>
               </View>
             )}
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.headerButton} 
+            style={createStyles(theme).headerButton} 
             onPress={handleAddStock}
-            activeOpacity={1.9}
+            activeOpacity={0.7}
           >
             <Ionicons 
               name="add-circle-outline" 
               size={Platform.OS === 'ios' ? 26 : 24} 
-              color={colors.primary} 
+              color={theme.primary} 
             />
           </TouchableOpacity>
         </View>
@@ -260,26 +248,26 @@ export default function WatchlistScreen() {
       />
 
       {/* Search and Filter Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+      <View style={createStyles(theme).searchContainer}>
+        <View style={createStyles(theme).searchBar}>
+          <Ionicons name="search" size={20} color={theme.textMuted} style={createStyles(theme).searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={createStyles(theme).searchInput}
             placeholder="Search & add"
-            placeholderTextColor="#666"
+            placeholderTextColor={theme.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-        <View style={styles.searchMeta}>
-          <Text style={styles.searchMetaText}>
+        <View style={createStyles(theme).searchMeta}>
+          <Text style={createStyles(theme).searchMetaText}>
             {watchlistStocks.length}/{currentWatchlistData?.symbols.length || 0}
           </Text>
-          <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
+          <TouchableOpacity style={createStyles(theme).filterButton} onPress={handleFilterPress}>
             <Ionicons 
               name="options" 
               size={20} 
-              color={filterType !== 'all' ? colors.primary : '#666'} 
+              color={filterType !== 'all' ? theme.primary : theme.textMuted} 
             />
           </TouchableOpacity>
         </View>
@@ -287,30 +275,30 @@ export default function WatchlistScreen() {
 
       {/* Filter Menu */}
       {showFilterMenu && (
-        <View style={styles.filterMenu}>
+        <View style={createStyles(theme).filterMenu}>
           <TouchableOpacity
-            style={[styles.filterOption, filterType === 'all' && styles.filterOptionActive]}
+            style={[createStyles(theme).filterOption, filterType === 'all' && createStyles(theme).filterOptionActive]}
             onPress={() => handleFilterSelect('all')}
           >
-            <Text style={[styles.filterOptionText, filterType === 'all' && styles.filterOptionTextActive]}>
+            <Text style={[createStyles(theme).filterOptionText, filterType === 'all' && createStyles(theme).filterOptionTextActive]}>
               All Stocks
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterOption, filterType === 'gainers' && styles.filterOptionActive]}
+            style={[createStyles(theme).filterOption, filterType === 'gainers' && createStyles(theme).filterOptionActive]}
             onPress={() => handleFilterSelect('gainers')}
           >
-            <Ionicons name="trending-up" size={16} color={colors.profit} />
-            <Text style={[styles.filterOptionText, filterType === 'gainers' && styles.filterOptionTextActive]}>
+            <Ionicons name="trending-up" size={16} color={theme.profit} />
+            <Text style={[createStyles(theme).filterOptionText, filterType === 'gainers' && createStyles(theme).filterOptionTextActive]}>
               Gainers
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterOption, filterType === 'losers' && styles.filterOptionActive]}
+            style={[createStyles(theme).filterOption, filterType === 'losers' && createStyles(theme).filterOptionActive]}
             onPress={() => handleFilterSelect('losers')}
           >
-            <Ionicons name="trending-down" size={16} color={colors.loss} />
-            <Text style={[styles.filterOptionText, filterType === 'losers' && styles.filterOptionTextActive]}>
+            <Ionicons name="trending-down" size={16} color={theme.loss} />
+            <Text style={[createStyles(theme).filterOptionText, filterType === 'losers' && createStyles(theme).filterOptionTextActive]}>
               Losers
             </Text>
           </TouchableOpacity>
@@ -319,17 +307,17 @@ export default function WatchlistScreen() {
 
       {/* Watchlist Content */}
       {watchlistStocks.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="list-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>
+        <View style={createStyles(theme).emptyContainer}>
+          <Ionicons name="list-outline" size={64} color={theme.textMuted} />
+          <Text style={createStyles(theme).emptyText}>
             {searchQuery ? 'No stocks found' : 'No stocks in watchlist'}
           </Text>
           {!searchQuery && (
             <TouchableOpacity
-              style={styles.addButton}
+              style={createStyles(theme).addButton}
               onPress={() => router.push('/search')}
             >
-              <Text style={styles.addButtonText}>Add Stocks</Text>
+              <Text style={createStyles(theme).addButtonText}>Add Stocks</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -347,10 +335,10 @@ export default function WatchlistScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#2962FF"
+              tintColor={theme.primary}
             />
           }
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={createStyles(theme).listContent}
         />
       )}
 
@@ -359,10 +347,10 @@ export default function WatchlistScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -371,9 +359,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -389,7 +377,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 56 : 52,
     borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 6,
@@ -398,10 +386,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: Platform.OS === 'ios' ? 24 : 22,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: colors.primary,
+    color: theme.primary,
     ...(Platform.OS === 'ios' && {
       letterSpacing: 0.5,
-      textShadowColor: 'rgba(0, 212, 255, 0.3)',
+      textShadowColor: theme.primary + '4D',
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 4,
     }),
@@ -416,14 +404,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderRadius: Platform.OS === 'ios' ? 12 : 8,
     ...(Platform.OS === 'ios' && {
-      backgroundColor: 'rgba(26, 26, 26, 0.8)',
+      backgroundColor: theme.card + 'CC',
     }),
   },
   notificationBadge: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 4 : 2,
     right: Platform.OS === 'ios' ? 4 : 2,
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     borderRadius: 12,
     minWidth: Platform.OS === 'ios' ? 22 : 20,
     height: Platform.OS === 'ios' ? 22 : 20,
@@ -431,15 +419,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...(Platform.OS === 'ios' && {
       borderWidth: 2,
-      borderColor: colors.backgroundSecondary,
-      shadowColor: colors.primary,
+      borderColor: theme.surface,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.8,
       shadowRadius: 3,
     }),
   },
   notificationBadgeText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: Platform.OS === 'ios' ? 11 : 10,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
   },
@@ -448,23 +436,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === 'ios' ? 16 : 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: Platform.OS === 'ios' ? 0.5 : 1,
-    borderBottomColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.2)' : colors.card,
+    borderBottomColor: Platform.OS === 'ios' ? theme.primary + '33' : theme.card,
     gap: 12,
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: Platform.OS === 'ios' ? 12 : 10,
     paddingHorizontal: 12,
     height: Platform.OS === 'ios' ? 44 : 42,
     borderWidth: Platform.OS === 'ios' ? 0.5 : 1,
-    borderColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.3)' : colors.border,
+    borderColor: Platform.OS === 'ios' ? theme.primary + '4D' : theme.border,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
       shadowRadius: 3,
@@ -475,7 +463,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: theme.text,
     fontSize: Platform.OS === 'ios' ? 16 : 14,
     fontWeight: Platform.OS === 'ios' ? '500' : 'normal',
   },
@@ -485,7 +473,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   searchMetaText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -503,32 +491,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 16,
     marginTop: 16,
     marginBottom: 24,
   },
   addButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 10,
   },
   addButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
   },
   filterMenu: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     marginHorizontal: 16,
     marginTop: 8,
     borderRadius: 12,
     padding: 8,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
       shadowRadius: 8,
@@ -543,15 +531,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterOptionActive: {
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
   },
   filterOptionText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 14,
     fontWeight: '500',
   },
   filterOptionTextActive: {
-    color: colors.primary,
+    color: theme.primary,
     fontWeight: '600',
   },
 });

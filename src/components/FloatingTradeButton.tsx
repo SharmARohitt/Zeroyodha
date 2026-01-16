@@ -4,10 +4,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMarketStore } from '../store/useMarketStore';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function FloatingTradeButton() {
   const router = useRouter();
   const { selectedSymbol } = useMarketStore();
+  const { theme, isDark } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0.6)).current;
 
@@ -58,9 +60,13 @@ export default function FloatingTradeButton() {
     }
   };
 
+  const gradientColors: [string, string, string] = isDark 
+    ? ['#42A5F5', '#1E88E5', '#1565C0']
+    : ['#1E88E5', '#1565C0', '#0D47A1'];
+
   return (
     <Animated.View style={[
-      styles.container,
+      createStyles(theme).container,
       {
         transform: [{ scale: scaleAnim }],
         ...(Platform.OS === 'ios' && {
@@ -69,23 +75,23 @@ export default function FloatingTradeButton() {
       }
     ]}>
       <TouchableOpacity 
-        style={styles.button} 
+        style={createStyles(theme).button} 
         onPress={handlePress} 
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={['#00D4FF', '#0099CC', '#006699']}
+          colors={gradientColors}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.gradient}
+          style={createStyles(theme).gradient}
         >
           <Ionicons 
             name="trending-up" 
             size={Platform.OS === 'ios' ? 24 : 25} 
             color="#FFFFFF" 
-            style={Platform.OS === 'ios' ? styles.iconShadow : {}}
+            style={Platform.OS === 'ios' ? createStyles(theme).iconShadow : {}}
           />
         </LinearGradient>
       </TouchableOpacity>
@@ -93,7 +99,7 @@ export default function FloatingTradeButton() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 100 : 85,
@@ -102,7 +108,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 52 : 48,
     borderRadius: Platform.OS === 'ios' ? 26 : 24,
     elevation: 10,
-    shadowColor: '#00D4FF',
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: Platform.OS === 'ios' ? 8 : 4 },
     shadowOpacity: Platform.OS === 'ios' ? 0.8 : 0.6,
     shadowRadius: Platform.OS === 'ios' ? 20 : 12,
@@ -121,7 +127,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...(Platform.OS === 'ios' && {
       borderWidth: 1,
-      borderColor: 'rgba(0, 212, 255, 0.3)',
+      borderColor: theme.primary + '4D',
     }),
   },
   iconShadow: {

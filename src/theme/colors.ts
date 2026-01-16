@@ -1,53 +1,56 @@
-// Wealth App Theme Colors
-// Based on the logo colors - Blue Neon, Green, and Dark tones
-
-export const colors = {
-  // Primary Colors
-  primary: '#00D4FF', // Blue Neon - Main brand color
-  primaryLight: '#33E0FF',
-  primaryDark: '#0099CC',
-  
-  // Secondary Colors
-  secondary: '#00C853', // Green - Success/Profit
-  secondaryLight: '#69F0AE',
-  secondaryDark: '#00A843',
-  
-  // Accent Colors
-  accent: '#2962FF', // Blue - Actions
-  accentLight: '#768FFF',
-  accentDark: '#0039CB',
-  
-  // Status Colors
-  profit: '#00C853',
-  loss: '#FF5252',
-  warning: '#FFC107',
+// Theme colors for light and dark modes
+export const lightTheme = {
+  primary: '#1E88E5',
+  secondary: '#FF6B35',
+  background: '#FFFFFF',
+  surface: '#F8F9FA',
+  card: '#FFFFFF',
+  text: '#212121',
+  textSecondary: '#757575',
+  textMuted: '#9E9E9E',
+  border: '#E0E0E0',
+  divider: '#F5F5F5',
+  success: '#4CAF50',
+  error: '#F44336',
+  warning: '#FF9800',
   info: '#2196F3',
-  
-  // Background Colors
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  backgroundTertiary: '#121212',
-  card: '#1A1A1A',
-  cardHover: '#252525',
-  
-  // Border Colors
-  border: '#2A2A2A',
-  borderLight: '#333333',
-  
-  // Text Colors
-  text: '#FFFFFF',
-  textSecondary: '#CCCCCC',
-  textMuted: '#999999',
-  textDark: '#666666',
-  
-  // Tab Bar
-  tabBarBackground: '#0A0A0A',
-  tabBarActive: '#00D4FF',
-  tabBarInactive: '#666666',
-  
-  // Gradient Colors (for special elements)
-  gradientStart: '#00D4FF',
-  gradientEnd: '#0099CC',
+  chartUp: '#00C853',
+  chartDown: '#F44336',
+  overlay: 'rgba(0,0,0,0.5)',
+  modalBackground: '#FFFFFF',
+  profit: '#4CAF50',
+  loss: '#F44336',
+  // Accent colors
+  accent: '#0A84FF',
+  accentSecondary: '#007AFF',
+  accentTertiary: '#FF9500',
 };
 
-export default colors;
+export const darkTheme = {
+  primary: '#42A5F5',
+  secondary: '#FF8A65',
+  background: '#121212',
+  surface: '#1E1E1E',
+  card: '#2D2D2D',
+  text: '#FFFFFF',
+  textSecondary: '#B0B0B0',
+  textMuted: '#757575',
+  border: '#404040',
+  divider: '#2D2D2D',
+  success: '#4CAF50',
+  error: '#F44336',
+  warning: '#FF9800',
+  info: '#2196F3',
+  chartUp: '#00C853',
+  chartDown: '#F44336',
+  overlay: 'rgba(0,0,0,0.7)',
+  modalBackground: '#2D2D2D',
+  profit: '#4CAF50',
+  loss: '#F44336',
+  // Accent colors
+  accent: '#0A84FF',
+  accentSecondary: '#007AFF',
+  accentTertiary: '#FF9500',
+};
+
+export type Theme = typeof lightTheme;

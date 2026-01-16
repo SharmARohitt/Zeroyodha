@@ -15,20 +15,7 @@ import { Order, OrderStatus } from '../../src/types';
 import { Ionicons } from '@expo/vector-icons';
 import OrderCard from '../../src/components/OrderCard';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  warning: '#FFC107',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 const orderTabs: { key: OrderStatus | 'ALL' | 'GTT' | 'BASKETS'; label: string }[] = [
   { key: 'ALL', label: 'All' },
@@ -39,6 +26,7 @@ const orderTabs: { key: OrderStatus | 'ALL' | 'GTT' | 'BASKETS'; label: string }
 ];
 
 export default function OrdersScreen() {
+  const { theme } = useTheme();
   const { orders, mode, cancelOrder } = useTradingStore();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<OrderStatus | 'ALL' | 'GTT' | 'BASKETS'>('ALL');
@@ -97,40 +85,40 @@ export default function OrdersScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
+    <View style={createStyles(theme).container}>
+      <View style={createStyles(theme).header}>
+        <View style={createStyles(theme).headerLeft}>
           <Animated.View style={{ transform: [{ scale: logoScale }] }}>
             <Image
               source={require('../../assets/images/Wealth.png')}
-              style={styles.logo}
+              style={createStyles(theme).logo}
               resizeMode="contain"
             />
           </Animated.View>
-          <Text style={styles.title}>Hey {getUserName()}!</Text>
+          <Text style={createStyles(theme).title}>Hey {getUserName()}!</Text>
         </View>
-        <View style={styles.modeBadge}>
-          <Text style={styles.modeText}>{mode === 'PAPER' ? '📝 Paper' : '💰 Live'}</Text>
+        <View style={createStyles(theme).modeBadge}>
+          <Text style={createStyles(theme).modeText}>{mode === 'PAPER' ? '📝 Paper' : '💰 Live'}</Text>
         </View>
       </View>
 
       {/* Top Indices Carousel */}
       <TopIndicesCarousel />
 
-      <View style={styles.tabs}>
+      <View style={createStyles(theme).tabs}>
         {orderTabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
             style={[
-              styles.tab,
-              activeTab === tab.key && styles.activeTab,
+              createStyles(theme).tab,
+              activeTab === tab.key && createStyles(theme).activeTab,
             ]}
             onPress={() => setActiveTab(tab.key)}
           >
             <Text
               style={[
-                styles.tabText,
-                activeTab === tab.key && styles.activeTabText,
+                createStyles(theme).tabText,
+                activeTab === tab.key && createStyles(theme).activeTabText,
               ]}
             >
               {tab.label}
@@ -140,14 +128,14 @@ export default function OrdersScreen() {
       </View>
 
       {filteredOrders.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="document-text-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>
+        <View style={createStyles(theme).emptyContainer}>
+          <Ionicons name="document-text-outline" size={64} color={theme.textMuted} />
+          <Text style={createStyles(theme).emptyText}>
             {activeTab === 'GTT' ? 'No GTT orders' : 
              activeTab === 'BASKETS' ? 'No basket orders' : 
              'No orders found'}
           </Text>
-          <Text style={styles.emptySubtext}>
+          <Text style={createStyles(theme).emptySubtext}>
             {activeTab === 'GTT' ? 'Your Good Till Triggered orders will appear here' :
              activeTab === 'BASKETS' ? 'Create basket orders to see them here' :
              `Your ${activeTab.toLowerCase()} orders will appear here`}
@@ -160,17 +148,17 @@ export default function OrdersScreen() {
           renderItem={({ item }) => (
             <OrderCard order={item} onCancel={handleCancel} />
           )}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={createStyles(theme).listContent}
         />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -179,9 +167,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -197,7 +185,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 56 : 52,
     borderRadius: Platform.OS === 'ios' ? 14 : 12,
     ...(Platform.OS === 'ios' && {
-      shadowColor: colors.primary,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.3,
       shadowRadius: 6,
@@ -206,24 +194,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: Platform.OS === 'ios' ? 24 : 22,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: colors.text,
+    color: theme.text,
     ...(Platform.OS === 'ios' && {
       letterSpacing: 0.5,
-      textShadowColor: 'rgba(255, 255, 255, 0.1)',
+      textShadowColor: theme.text + '1A',
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     }),
   },
   modeBadge: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.primary,
   },
   modeText: {
-    color: colors.primary,
+    color: theme.primary,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -231,9 +219,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.card,
+    borderBottomColor: theme.card,
   },
   tab: {
     flex: 1,
@@ -243,15 +231,15 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: colors.primary,
+    borderBottomColor: theme.primary,
   },
   tabText: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
   activeTabText: {
-    color: colors.primary,
+    color: theme.primary,
   },
   listContent: {
     padding: 16,
@@ -263,16 +251,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: '600',
     marginTop: 16,
   },
   emptySubtext: {
-    color: colors.textMuted,
+    color: theme.textMuted,
     fontSize: 14,
     marginTop: 8,
     textAlign: 'center',
   },
 });
-

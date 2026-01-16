@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ interface ToastProps {
 }
 
 export default function Toast({ message, type, visible, onHide, duration = 3000 }: ToastProps) {
+  const { theme } = useTheme();
   const translateY = useRef(new Animated.Value(-100)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.8)).current;
@@ -73,28 +75,28 @@ export default function Toast({ message, type, visible, onHide, duration = 3000 
     switch (type) {
       case 'success':
         return { 
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 200, 83, 0.95)' : '#00C853', 
-          borderColor: '#00A843' 
+          backgroundColor: Platform.OS === 'ios' ? theme.success + 'F2' : theme.success, 
+          borderColor: theme.success 
         };
       case 'error':
         return { 
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(255, 82, 82, 0.95)' : '#FF5252', 
-          borderColor: '#E53935' 
+          backgroundColor: Platform.OS === 'ios' ? theme.error + 'F2' : theme.error, 
+          borderColor: theme.error 
         };
       case 'warning':
         return { 
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(255, 193, 7, 0.95)' : '#FFC107', 
-          borderColor: '#FFB300' 
+          backgroundColor: Platform.OS === 'ios' ? theme.warning + 'F2' : theme.warning, 
+          borderColor: theme.warning 
         };
       case 'info':
         return { 
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.95)' : '#00D4FF', 
-          borderColor: '#0099CC' 
+          backgroundColor: Platform.OS === 'ios' ? theme.primary + 'F2' : theme.primary, 
+          borderColor: theme.primary 
         };
       default:
         return { 
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.95)' : '#00D4FF', 
-          borderColor: '#0099CC' 
+          backgroundColor: Platform.OS === 'ios' ? theme.primary + 'F2' : theme.primary, 
+          borderColor: theme.primary 
         };
     }
   };
@@ -119,7 +121,7 @@ export default function Toast({ message, type, visible, onHide, duration = 3000 
   return (
     <Animated.View
       style={[
-        styles.container,
+        createStyles(theme).container,
         getToastStyle(),
         {
           transform: [{ translateY }, { scale }],
@@ -131,14 +133,14 @@ export default function Toast({ message, type, visible, onHide, duration = 3000 
         name={getIcon()} 
         size={Platform.OS === 'ios' ? 26 : 24} 
         color="#FFFFFF" 
-        style={Platform.OS === 'ios' ? styles.iconShadow : {}}
+        style={Platform.OS === 'ios' ? createStyles(theme).iconShadow : {}}
       />
-      <Text style={styles.message}>{message}</Text>
+      <Text style={createStyles(theme).message}>{message}</Text>
     </Animated.View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 65 : 60,

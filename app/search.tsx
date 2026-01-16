@@ -12,20 +12,10 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMarketStore } from '../src/store/useMarketStore';
 import { Stock } from '../src/types';
-
-const colors = {
-  primary: '#00D4FF',
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
+import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function SearchScreen() {
+  const { theme } = useTheme();
   const router = useRouter();
   const { stocks, addToWatchlist, currentWatchlist, watchlists } = useMarketStore();
   
@@ -83,30 +73,30 @@ export default function SearchScreen() {
     
     return (
       <TouchableOpacity
-        style={styles.stockItem}
+        style={createStyles(theme).stockItem}
         onPress={() => handleStockPress(item.symbol)}
       >
-        <View style={styles.stockLeft}>
-          <Text style={styles.stockSymbol}>{item.symbol}</Text>
-          <Text style={styles.stockName} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.stockExchange}>{item.exchange}</Text>
+        <View style={createStyles(theme).stockLeft}>
+          <Text style={createStyles(theme).stockSymbol}>{item.symbol}</Text>
+          <Text style={createStyles(theme).stockName} numberOfLines={1}>{item.name}</Text>
+          <Text style={createStyles(theme).stockExchange}>{item.exchange}</Text>
         </View>
         
-        <View style={styles.stockCenter}>
-          <Text style={styles.stockPrice}>₹{item.lastPrice.toFixed(2)}</Text>
-          <Text style={[styles.stockChange, { color: isPositive ? colors.profit : colors.loss }]}>
+        <View style={createStyles(theme).stockCenter}>
+          <Text style={createStyles(theme).stockPrice}>₹{item.lastPrice.toFixed(2)}</Text>
+          <Text style={[createStyles(theme).stockChange, { color: isPositive ? theme.profit : theme.loss }]}>
             {isPositive ? '+' : ''}{changePercent.toFixed(2)}%
           </Text>
         </View>
         
         <TouchableOpacity
-          style={[styles.addButton, inWatchlist && styles.addButtonActive]}
+          style={[createStyles(theme).addButton, inWatchlist && createStyles(theme).addButtonActive]}
           onPress={() => !inWatchlist && handleAddToWatchlist(item.symbol)}
         >
           <Ionicons
             name={inWatchlist ? 'checkmark' : 'add'}
             size={20}
-            color={inWatchlist ? colors.profit : colors.primary}
+            color={inWatchlist ? theme.profit : theme.primary}
           />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -120,71 +110,71 @@ export default function SearchScreen() {
     return (
       <TouchableOpacity
         key={symbol}
-        style={styles.recentItem}
+        style={createStyles(theme).recentItem}
         onPress={() => handleStockPress(symbol)}
       >
-        <Ionicons name="time-outline" size={20} color={colors.textMuted} />
-        <View style={styles.recentInfo}>
-          <Text style={styles.recentSymbol}>{stock.symbol}</Text>
-          <Text style={styles.recentName} numberOfLines={1}>{stock.name}</Text>
+        <Ionicons name="time-outline" size={20} color={theme.textMuted} />
+        <View style={createStyles(theme).recentInfo}>
+          <Text style={createStyles(theme).recentSymbol}>{stock.symbol}</Text>
+          <Text style={createStyles(theme).recentName} numberOfLines={1}>{stock.name}</Text>
         </View>
-        <Text style={styles.recentPrice}>₹{stock.lastPrice.toFixed(2)}</Text>
+        <Text style={createStyles(theme).recentPrice}>₹{stock.lastPrice.toFixed(2)}</Text>
       </TouchableOpacity>
     );
   };
   
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+    <View style={createStyles(theme).container}>
+      <View style={createStyles(theme).header}>
+        <TouchableOpacity onPress={() => router.back()} style={createStyles(theme).backButton}>
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={colors.textMuted} />
+        <View style={createStyles(theme).searchBar}>
+          <Ionicons name="search" size={20} color={theme.textMuted} />
           <TextInput
-            style={styles.searchInput}
+            style={createStyles(theme).searchInput}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search stocks, derivatives..."
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={theme.textMuted}
             autoFocus
             autoCapitalize="characters"
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+              <Ionicons name="close-circle" size={20} color={theme.textMuted} />
             </TouchableOpacity>
           )}
         </View>
       </View>
       
       {searchQuery.trim() === '' ? (
-        <View style={styles.content}>
+        <View style={createStyles(theme).content}>
           {recentSearches.length > 0 && (
-            <View style={styles.recentSection}>
-              <View style={styles.recentHeader}>
-                <Text style={styles.sectionTitle}>Recent Searches</Text>
+            <View style={createStyles(theme).recentSection}>
+              <View style={createStyles(theme).recentHeader}>
+                <Text style={createStyles(theme).sectionTitle}>Recent Searches</Text>
                 <TouchableOpacity onPress={() => setRecentSearches([])}>
-                  <Text style={styles.clearText}>Clear</Text>
+                  <Text style={createStyles(theme).clearText}>Clear</Text>
                 </TouchableOpacity>
               </View>
               {recentSearches.map(renderRecentSearch)}
             </View>
           )}
           
-          <View style={styles.tipsSection}>
-            <Text style={styles.sectionTitle}>Search Tips</Text>
-            <View style={styles.tipItem}>
-              <Ionicons name="bulb-outline" size={20} color={colors.primary} />
-              <Text style={styles.tipText}>Search by stock symbol (e.g., RELIANCE, TCS)</Text>
+          <View style={createStyles(theme).tipsSection}>
+            <Text style={createStyles(theme).sectionTitle}>Search Tips</Text>
+            <View style={createStyles(theme).tipItem}>
+              <Ionicons name="bulb-outline" size={20} color={theme.primary} />
+              <Text style={createStyles(theme).tipText}>Search by stock symbol (e.g., RELIANCE, TCS)</Text>
             </View>
-            <View style={styles.tipItem}>
-              <Ionicons name="bulb-outline" size={20} color={colors.primary} />
-              <Text style={styles.tipText}>Search by company name (e.g., Tata Motors)</Text>
+            <View style={createStyles(theme).tipItem}>
+              <Ionicons name="bulb-outline" size={20} color={theme.primary} />
+              <Text style={createStyles(theme).tipText}>Search by company name (e.g., Tata Motors)</Text>
             </View>
-            <View style={styles.tipItem}>
-              <Ionicons name="bulb-outline" size={20} color={colors.primary} />
-              <Text style={styles.tipText}>Search derivatives (e.g., NIFTY 17000 CE)</Text>
+            <View style={createStyles(theme).tipItem}>
+              <Ionicons name="bulb-outline" size={20} color={theme.primary} />
+              <Text style={createStyles(theme).tipText}>Search derivatives (e.g., NIFTY 17000 CE)</Text>
             </View>
           </View>
         </View>
@@ -193,12 +183,12 @@ export default function SearchScreen() {
           data={filteredStocks}
           keyExtractor={(item) => item.symbol}
           renderItem={renderStockItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={createStyles(theme).listContent}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="search-outline" size={64} color={colors.textMuted} />
-              <Text style={styles.emptyText}>No stocks found</Text>
-              <Text style={styles.emptySubtext}>Try searching with different keywords</Text>
+            <View style={createStyles(theme).emptyContainer}>
+              <Ionicons name="search-outline" size={64} color={theme.textMuted} />
+              <Text style={createStyles(theme).emptyText}>No stocks found</Text>
+              <Text style={createStyles(theme).emptySubtext}>Try searching with different keywords</Text>
             </View>
           }
         />
@@ -207,10 +197,10 @@ export default function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -218,7 +208,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     gap: 12,
   },
   backButton: {
@@ -228,17 +218,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 44,
     gap: 8,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   searchInput: {
     flex: 1,
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
   },
   content: {
@@ -257,18 +247,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   clearText: {
     fontSize: 14,
-    color: colors.primary,
+    color: theme.primary,
     fontWeight: '600',
   },
   recentItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 10,
     marginBottom: 8,
     gap: 12,
@@ -279,17 +269,17 @@ const styles = StyleSheet.create({
   recentSymbol: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
   },
   recentName: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   recentPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
   },
   tipsSection: {
     marginTop: 16,
@@ -303,7 +293,7 @@ const styles = StyleSheet.create({
   tipText: {
     flex: 1,
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
     lineHeight: 20,
   },
   listContent: {
@@ -313,11 +303,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   stockLeft: {
     flex: 1,
@@ -325,16 +315,16 @@ const styles = StyleSheet.create({
   stockSymbol: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   stockName: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   stockExchange: {
     fontSize: 10,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   stockCenter: {
@@ -344,7 +334,7 @@ const styles = StyleSheet.create({
   stockPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   stockChange: {
     fontSize: 12,
@@ -355,15 +345,15 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.primary,
   },
   addButtonActive: {
-    backgroundColor: colors.backgroundSecondary,
-    borderColor: colors.profit,
+    backgroundColor: theme.surface,
+    borderColor: theme.profit,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -372,12 +362,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text,
+    color: theme.text,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 8,
   },
 });

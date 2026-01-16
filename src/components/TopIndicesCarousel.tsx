@@ -9,25 +9,15 @@ import {
 } from 'react-native';
 import { useMarketStore } from '../store/useMarketStore';
 import { formatCurrency, formatPercent } from '../utils/formatters';
-import { getStockLogo } from '../utils/stockLogos';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.28; // Smaller cards
+const CARD_WIDTH = width * 0.28;
 const CARD_SPACING = 6;
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-};
 
 export default function TopIndicesCarousel() {
   const { stocks } = useMarketStore();
+  const { theme } = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Get major indices
@@ -44,39 +34,38 @@ export default function TopIndicesCarousel() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={createStyles(theme).container}>
       <ScrollView
         ref={scrollViewRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         snapToInterval={CARD_WIDTH + CARD_SPACING}
         decelerationRate="fast"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={createStyles(theme).scrollContent}
         pagingEnabled={false}
         snapToAlignment="start"
       >
         {indices.map((index) => {
           if (!index) return null;
           const isPositive = index.change >= 0;
-          const changeColor = isPositive ? colors.profit : colors.loss;
-          const logoInfo = getStockLogo(index.symbol);
+          const changeColor = isPositive ? theme.profit : theme.loss;
 
           return (
             <TouchableOpacity
               key={index.symbol}
-              style={styles.card}
+              style={createStyles(theme).card}
               activeOpacity={0.9}
             >
-              <View style={styles.cardHeader}>
-                <Text style={styles.indexName} numberOfLines={1}>{index.name}</Text>
+              <View style={createStyles(theme).cardHeader}>
+                <Text style={createStyles(theme).indexName} numberOfLines={1}>{index.name}</Text>
               </View>
               
-              <View style={styles.cardBody}>
-                <Text style={styles.indexValue}>
+              <View style={createStyles(theme).cardBody}>
+                <Text style={createStyles(theme).indexValue}>
                   {formatCurrency(index.lastPrice)}
                 </Text>
-                <View style={[styles.changeContainer, { backgroundColor: changeColor + '15' }]}>
-                  <Text style={[styles.changeText, { color: changeColor }]}>
+                <View style={[createStyles(theme).changeContainer, { backgroundColor: changeColor + '15' }]}>
+                  <Text style={[createStyles(theme).changeText, { color: changeColor }]}>
                     {isPositive ? '▲' : '▼'} {formatPercent(Math.abs(index.changePercent))}
                   </Text>
                 </View>
@@ -89,9 +78,9 @@ export default function TopIndicesCarousel() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
+    backgroundColor: theme.surface,
     paddingVertical: 6,
   },
   scrollContent: {
@@ -99,12 +88,12 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     padding: 8,
     marginRight: CARD_SPACING,
     borderWidth: 0.5,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   cardHeader: {
     marginBottom: 4,
@@ -112,7 +101,7 @@ const styles = StyleSheet.create({
   indexName: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#999',
+    color: theme.textSecondary,
     textTransform: 'uppercase',
   },
   cardBody: {
@@ -121,7 +110,7 @@ const styles = StyleSheet.create({
   indexValue: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   changeContainer: {
     alignSelf: 'flex-start',

@@ -11,23 +11,13 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
-const colors = {
-  primary: '#00D4FF',
-  profit: '#00C853',
-  loss: '#FF5252',
-  background: '#000000',
-  backgroundSecondary: '#0A0A0A',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-};
+import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function IPOBidScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { ipoName, symbol } = params;
+  const { theme } = useTheme();
   
   const [quantity, setQuantity] = useState('');
   const [bidPrice, setBidPrice] = useState('');
@@ -52,43 +42,43 @@ export default function IPOBidScreen() {
   };
   
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={createStyles(theme).container}>
+      <View style={createStyles(theme).header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={28} color={colors.text} />
+          <Ionicons name="close" size={28} color={theme.text} />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{ipoName}</Text>
-          <Text style={styles.headerSubtitle}>{symbol}</Text>
+        <View style={createStyles(theme).headerCenter}>
+          <Text style={createStyles(theme).headerTitle}>{ipoName}</Text>
+          <Text style={createStyles(theme).headerSubtitle}>{symbol}</Text>
         </View>
         <View style={{ width: 28 }} />
       </View>
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={24} color={colors.primary} />
-          <Text style={styles.infoText}>
+      <ScrollView style={createStyles(theme).content} showsVerticalScrollIndicator={false}>
+        <View style={createStyles(theme).infoCard}>
+          <Ionicons name="information-circle" size={24} color={theme.primary} />
+          <Text style={createStyles(theme).infoText}>
             IPO bids are subject to allotment. You will be notified once the allotment is finalized.
           </Text>
         </View>
         
         {/* Category Selection */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Investor Category</Text>
-          <View style={styles.chipContainer}>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Investor Category</Text>
+          <View style={createStyles(theme).chipContainer}>
             {(['RETAIL', 'HNI', 'QIB'] as const).map((cat) => (
               <TouchableOpacity
                 key={cat}
-                style={[styles.chip, category === cat && styles.chipActive]}
+                style={[createStyles(theme).chip, category === cat && createStyles(theme).chipActive]}
                 onPress={() => setCategory(cat)}
               >
-                <Text style={[styles.chipText, category === cat && styles.chipTextActive]}>
+                <Text style={[createStyles(theme).chipText, category === cat && createStyles(theme).chipTextActive]}>
                   {cat}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-          <Text style={styles.helperText}>
+          <Text style={createStyles(theme).helperText}>
             {category === 'RETAIL' && 'For investments up to ₹2 lakhs'}
             {category === 'HNI' && 'For investments above ₹2 lakhs'}
             {category === 'QIB' && 'Qualified Institutional Buyers'}
@@ -96,93 +86,93 @@ export default function IPOBidScreen() {
         </View>
         
         {/* Quantity */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Number of Shares (Lot Size: 100)</Text>
-          <View style={styles.inputRow}>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Number of Shares (Lot Size: 100)</Text>
+          <View style={createStyles(theme).inputRow}>
             <TouchableOpacity
-              style={styles.quantityButton}
+              style={createStyles(theme).quantityButton}
               onPress={() => setQuantity(Math.max(0, parseInt(quantity || '0') - 100).toString())}
             >
-              <Ionicons name="remove" size={20} color={colors.text} />
+              <Ionicons name="remove" size={20} color={theme.text} />
             </TouchableOpacity>
             <TextInput
-              style={styles.input}
+              style={createStyles(theme).input}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="numeric"
               placeholder="Enter quantity"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={theme.textMuted}
             />
             <TouchableOpacity
-              style={styles.quantityButton}
+              style={createStyles(theme).quantityButton}
               onPress={() => setQuantity((parseInt(quantity || '0') + 100).toString())}
             >
-              <Ionicons name="add" size={20} color={colors.text} />
+              <Ionicons name="add" size={20} color={theme.text} />
             </TouchableOpacity>
           </View>
         </View>
         
         {/* Bid Price */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Bid Price (₹)</Text>
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionLabel}>Bid Price (₹)</Text>
           <TextInput
-            style={styles.input}
+            style={createStyles(theme).input}
             value={bidPrice}
             onChangeText={setBidPrice}
             keyboardType="decimal-pad"
             placeholder="Enter bid price"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={theme.textMuted}
           />
-          <Text style={styles.helperText}>
+          <Text style={createStyles(theme).helperText}>
             Price should be within the IPO price band
           </Text>
         </View>
         
         {/* Summary */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Bid Summary</Text>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Quantity</Text>
-            <Text style={styles.summaryValue}>{quantity || '0'} shares</Text>
+        <View style={createStyles(theme).summaryCard}>
+          <Text style={createStyles(theme).summaryTitle}>Bid Summary</Text>
+          <View style={createStyles(theme).summaryRow}>
+            <Text style={createStyles(theme).summaryLabel}>Quantity</Text>
+            <Text style={createStyles(theme).summaryValue}>{quantity || '0'} shares</Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Bid Price</Text>
-            <Text style={styles.summaryValue}>₹{bidPrice || '0'}</Text>
+          <View style={createStyles(theme).summaryRow}>
+            <Text style={createStyles(theme).summaryLabel}>Bid Price</Text>
+            <Text style={createStyles(theme).summaryValue}>₹{bidPrice || '0'}</Text>
           </View>
-          <View style={[styles.summaryRow, styles.summaryRowTotal]}>
-            <Text style={styles.summaryLabel}>Total Amount</Text>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>
+          <View style={[createStyles(theme).summaryRow, createStyles(theme).summaryRowTotal]}>
+            <Text style={createStyles(theme).summaryLabel}>Total Amount</Text>
+            <Text style={[createStyles(theme).summaryValue, { color: theme.primary }]}>
               ₹{((parseInt(quantity || '0') * parseFloat(bidPrice || '0'))).toLocaleString('en-IN')}
             </Text>
           </View>
         </View>
         
-        <View style={styles.noteCard}>
-          <Text style={styles.noteTitle}>Important Notes:</Text>
-          <Text style={styles.noteText}>• Minimum bid quantity is 1 lot (100 shares)</Text>
-          <Text style={styles.noteText}>• Funds will be blocked until allotment</Text>
-          <Text style={styles.noteText}>• Allotment is subject to availability</Text>
-          <Text style={styles.noteText}>• Refund for unallotted shares within 7 days</Text>
+        <View style={createStyles(theme).noteCard}>
+          <Text style={createStyles(theme).noteTitle}>Important Notes:</Text>
+          <Text style={createStyles(theme).noteText}>• Minimum bid quantity is 1 lot (100 shares)</Text>
+          <Text style={createStyles(theme).noteText}>• Funds will be blocked until allotment</Text>
+          <Text style={createStyles(theme).noteText}>• Allotment is subject to availability</Text>
+          <Text style={createStyles(theme).noteText}>• Refund for unallotted shares within 7 days</Text>
         </View>
       </ScrollView>
       
       {/* Place Bid Button */}
-      <View style={styles.footer}>
+      <View style={createStyles(theme).footer}>
         <TouchableOpacity
-          style={styles.placeBidButton}
+          style={createStyles(theme).placeBidButton}
           onPress={handlePlaceBid}
         >
-          <Text style={styles.placeBidText}>Place Bid</Text>
+          <Text style={createStyles(theme).placeBidText}>Place Bid</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: 'row',
@@ -191,9 +181,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 55 : 45,
     paddingBottom: 16,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: theme.border,
   },
   headerCenter: {
     alignItems: 'center',
@@ -201,11 +191,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 2,
   },
   content: {
@@ -214,18 +204,18 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: theme.primary,
     gap: 12,
   },
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: colors.text,
+    color: theme.text,
     lineHeight: 20,
   },
   section: {
@@ -234,7 +224,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginBottom: 8,
   },
   chipContainer: {
@@ -246,25 +236,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   chipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   chipTextActive: {
-    color: colors.text,
+    color: theme.text,
   },
   helperText: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginTop: 4,
   },
   inputRow: {
@@ -274,37 +264,37 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: colors.text,
+    color: theme.text,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   quantityButton: {
     width: 44,
     height: 44,
     borderRadius: 8,
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   summaryCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   summaryTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 12,
   },
   summaryRow: {
@@ -314,48 +304,48 @@ const styles = StyleSheet.create({
   },
   summaryRowTotal: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
     paddingTop: 12,
     marginTop: 4,
   },
   summaryLabel: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   summaryValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   noteCard: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   noteTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 8,
   },
   noteText: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: theme.textMuted,
     marginBottom: 4,
     lineHeight: 18,
   },
   footer: {
     padding: 16,
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
   },
   placeBidButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -363,6 +353,6 @@ const styles = StyleSheet.create({
   placeBidText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
 });

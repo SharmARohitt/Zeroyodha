@@ -1,35 +1,31 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useColorScheme, Platform } from 'react-native';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  background: '#0A0A0A',
-  border: '#1A1A1A',
-  inactive: '#666666',
-};
+import { Platform } from 'react-native';
+import { useTheme } from '../../src/contexts/ThemeContext';
 
 export default function TabsLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const { theme, isDark } = useTheme();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.inactive,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textMuted,
         tabBarStyle: {
-          backgroundColor: Platform.OS === 'ios' ? 'rgba(10, 10, 10, 0.95)' : colors.background,
-          borderTopColor: Platform.OS === 'ios' ? 'rgba(0, 212, 255, 0.3)' : colors.border,
+          backgroundColor: Platform.OS === 'ios' 
+            ? (isDark ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)')
+            : theme.surface,
+          borderTopColor: Platform.OS === 'ios' 
+            ? (isDark ? 'rgba(66, 165, 245, 0.3)' : 'rgba(30, 136, 229, 0.3)')
+            : theme.border,
           borderTopWidth: Platform.OS === 'ios' ? 0.5 : 1,
           height: Platform.OS === 'ios' ? 95 : 75,
           paddingBottom: Platform.OS === 'ios' ? 36 : 22,
           paddingTop: Platform.OS === 'ios' ? 8 : 12,
           elevation: 0,
           shadowOpacity: Platform.OS === 'ios' ? 0.3 : 0,
-          shadowColor: Platform.OS === 'ios' ? colors.primary : '#000',
+          shadowColor: Platform.OS === 'ios' ? theme.primary : theme.background,
           shadowOffset: { width: 0, height: Platform.OS === 'ios' ? -4 : -2 },
           shadowRadius: Platform.OS === 'ios' ? 16 : 8,
           position: 'absolute',
