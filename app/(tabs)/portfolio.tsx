@@ -20,6 +20,7 @@ import PositionCard from '../../src/components/PositionCard';
 import HoldingCard from '../../src/components/HoldingCard';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import FloatingTradeButton from '../../src/components/FloatingTradeButton';
 
 type TabType = 'HOLDINGS' | 'POSITIONS';
 
@@ -80,7 +81,8 @@ export default function PortfolioScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await updateMarketData();
+    // Refresh market data would be called here
+    // await updateMarketData(newData);
     setRefreshing(false);
   };
 
@@ -219,6 +221,8 @@ export default function PortfolioScreen() {
           )
         )}
       </View>
+      
+      <FloatingTradeButton />
     </ScrollView>
   );
 }

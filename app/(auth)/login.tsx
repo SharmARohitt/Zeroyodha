@@ -249,20 +249,6 @@ export default function LoginScreen() {
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* Divider */}
-              <View style={createStyles(theme).divider}>
-                <View style={createStyles(theme).dividerLine} />
-                <Text style={createStyles(theme).dividerText}>or</Text>
-                <View style={createStyles(theme).dividerLine} />
-              </View>
-
-              {/* Social login - Google only */}
-              <View style={createStyles(theme).socialContainer}>
-                <TouchableOpacity style={createStyles(theme).socialButton}>
-                  <Ionicons name="logo-google" size={20} color={theme.text} />
-                </TouchableOpacity>
-              </View>
-
               {/* Register link */}
               <TouchableOpacity
                 style={createStyles(theme).linkButton}

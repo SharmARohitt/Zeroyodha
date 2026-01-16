@@ -19,6 +19,7 @@ import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRouter } from 'expo-router';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import FloatingTradeButton from '../../src/components/FloatingTradeButton';
 
 // Mock IPO data
 const mockIPOs: IPO[] = [
@@ -267,6 +268,8 @@ export default function BidsScreen() {
           )}
         </ScrollView>
       )}
+      
+      <FloatingTradeButton />
     </View>
   );
 }

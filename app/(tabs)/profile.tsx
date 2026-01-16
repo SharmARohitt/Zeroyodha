@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import * as ImagePicker from 'expo-image-picker';
+import FloatingTradeButton from '../../src/components/FloatingTradeButton';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -288,6 +289,8 @@ export default function ProfileScreen() {
         <Ionicons name="log-out" size={20} color={theme.loss} />
         <Text style={createStyles(theme).logoutText}>Logout</Text>
       </TouchableOpacity>
+      
+      <FloatingTradeButton />
     </ScrollView>
   );
 }

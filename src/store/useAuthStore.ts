@@ -7,22 +7,29 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  hasSeenOnboarding: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, displayName?: string) => Promise<void>;
+  signInWithGoogle: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   updateUser: (user: User) => void;
+  setHasSeenOnboarding: (value: boolean) => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+const ONBOARDING_KEY = '@wealth_warrior_onboarding_seen';
+const USER_KEY = '@wealth_warrior_user';
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isLoading: true,
   isAuthenticated: false,
+  hasSeenOnboarding: false,
 
   login: async (email: string, password: string) => {
     try {
       const user = await authService.login(email, password);
-      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
       set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
@@ -33,8 +40,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email: string, password: string, displayName?: string) => {
     try {
       const user = await authService.register(email, password, displayName);
-      await AsyncStorage.setItem('user', JSON.stringify(user));
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
       set({ user, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  signInWithGoogle: async (idToken: string) => {
+    try {
+      const { user, isNewUser } = await authService.signInWithGoogle(idToken);
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+      set({ user, isAuthenticated: true, isLoading: false });
+      
+      // Show welcome message for new users
+      if (isNewUser) {
+        console.log('Welcome! A verification email has been sent to:', user.email);
+      }
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -43,24 +66,29 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await authService.logout();
-    await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem(USER_KEY);
     set({ user: null, isAuthenticated: false });
   },
 
   checkAuth: async () => {
     try {
-      const storedUser = await AsyncStorage.getItem('user');
+      // Check if user has seen onboarding
+      const onboardingSeen = await AsyncStorage.getItem(ONBOARDING_KEY);
+      const hasSeenOnboarding = onboardingSeen === 'true';
+      
+      // Check if user is authenticated
+      const storedUser = await AsyncStorage.getItem(USER_KEY);
       if (storedUser) {
         const user = JSON.parse(storedUser);
         const isValid = await authService.verifyAuth();
         if (isValid) {
-          set({ user, isAuthenticated: true, isLoading: false });
+          set({ user, isAuthenticated: true, isLoading: false, hasSeenOnboarding });
         } else {
-          await AsyncStorage.removeItem('user');
-          set({ user: null, isAuthenticated: false, isLoading: false });
+          await AsyncStorage.removeItem(USER_KEY);
+          set({ user: null, isAuthenticated: false, isLoading: false, hasSeenOnboarding });
         }
       } else {
-        set({ isLoading: false });
+        set({ isLoading: false, hasSeenOnboarding });
       }
     } catch (error) {
       set({ isLoading: false });
@@ -69,7 +97,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   updateUser: (user: User) => {
     set({ user });
-    AsyncStorage.setItem('user', JSON.stringify(user));
+    AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
+  setHasSeenOnboarding: async (value: boolean) => {
+    await AsyncStorage.setItem(ONBOARDING_KEY, value.toString());
+    set({ hasSeenOnboarding: value });
   },
 }));
 

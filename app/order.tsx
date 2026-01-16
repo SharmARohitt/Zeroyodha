@@ -16,6 +16,7 @@ import { useMarketStore } from '../src/store/useMarketStore';
 import { useTradingStore } from '../src/store/useTradingStore';
 import { OrderType, ProductType, OrderSide } from '../src/types';
 import { useTheme } from '../src/contexts/ThemeContext';
+import FloatingTradeButton from '../src/components/FloatingTradeButton';
 
 type GTTCondition = 'SINGLE' | 'OCO';
 
@@ -502,6 +503,8 @@ export default function OrderScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      
+      <FloatingTradeButton />
     </View>
   );
 }

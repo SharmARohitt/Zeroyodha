@@ -397,13 +397,6 @@ export default function RegisterScreen() {
                   <Text style={createStyles(theme).termsLink}>Privacy Policy</Text>
                 </Text>
 
-                {/* Social login - Google only */}
-                <View style={createStyles(theme).socialContainer}>
-                  <TouchableOpacity style={createStyles(theme).socialButton}>
-                    <Ionicons name="logo-google" size={20} color={theme.text} />
-                  </TouchableOpacity>
-                </View>
-
                 {/* Login link */}
                 <TouchableOpacity
                   style={createStyles(theme).linkButton}
@@ -440,7 +433,7 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   logoContainer: {
     alignSelf: 'center',
-    marginBottom: 24,
+    marginBottom: 34,
     ...Platform.select({
       ios: {
         shadowColor: '#000',

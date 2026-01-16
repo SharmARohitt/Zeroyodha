@@ -5,7 +5,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function Index() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, hasSeenOnboarding, checkAuth } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -26,12 +26,17 @@ export default function Index() {
   useEffect(() => {
     if (isReady && !isLoading) {
       if (isAuthenticated) {
+        // User is logged in, go to main app
         router.replace('/(tabs)/watchlist');
+      } else if (hasSeenOnboarding) {
+        // User has seen onboarding before, go to login
+        router.replace('/(auth)/login');
       } else {
+        // First time user, show onboarding
         router.replace('/(auth)/onboarding');
       }
     }
-  }, [isReady, isAuthenticated, isLoading]);
+  }, [isReady, isAuthenticated, isLoading, hasSeenOnboarding]);
 
   return (
     <View style={styles.container}>

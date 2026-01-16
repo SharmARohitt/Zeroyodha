@@ -6,6 +6,9 @@ import {
   signOut,
   sendEmailVerification,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithCredential,
+  updateProfile,
   User as FirebaseUser,
 } from 'firebase/auth';
 import { User } from '../types';
@@ -36,18 +39,45 @@ const mapFirebaseUser = (user: FirebaseUser): User => ({
 class AuthService {
   async register(email: string, password: string, displayName?: string): Promise<User> {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    
     if (displayName && userCredential.user) {
-      // Update display name if provided
+      await updateProfile(userCredential.user, { displayName });
     }
+    
     if (userCredential.user) {
       await sendEmailVerification(userCredential.user);
     }
+    
     return mapFirebaseUser(userCredential.user);
   }
 
   async login(email: string, password: string): Promise<User> {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return mapFirebaseUser(userCredential.user);
+  }
+
+  async signInWithGoogle(idToken: string): Promise<{ user: User; isNewUser: boolean }> {
+    try {
+      const credential = GoogleAuthProvider.credential(idToken);
+      const userCredential = await signInWithCredential(auth, credential);
+      
+      // Check if this is a new user
+      const isNewUser = userCredential.user.metadata.creationTime === userCredential.user.metadata.lastSignInTime;
+      
+      // Send welcome email for new users
+      if (isNewUser && userCredential.user.email) {
+        await sendEmailVerification(userCredential.user);
+        console.log('New user registered:', userCredential.user.email);
+      }
+      
+      return {
+        user: mapFirebaseUser(userCredential.user),
+        isNewUser
+      };
+    } catch (error: any) {
+      console.error('Google Sign-In Error:', error);
+      throw new Error(error.message || 'Failed to sign in with Google');
+    }
   }
 
   async logout(): Promise<void> {
@@ -67,7 +97,14 @@ class AuthService {
     const user = auth.currentUser;
     return user ? mapFirebaseUser(user) : null;
   }
+
+  onAuthStateChange(callback: (user: User | null) => void) {
+    return onAuthStateChanged(auth, (firebaseUser) => {
+      callback(firebaseUser ? mapFirebaseUser(firebaseUser) : null);
+    });
+  }
 }
 
 export const authService = new AuthService();
+
 

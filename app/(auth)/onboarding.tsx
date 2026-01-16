@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { BlurView } from 'expo-blur';
+import { useAuthStore } from '../../src/store/useAuthStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,57 +23,47 @@ const onboardingSlides = [
     title: 'Welcome to',
     appName: 'Wealth Warrior',
     description: 'Your ultimate financial companion. Master the art of investing with our comprehensive platform designed for both beginners and experienced traders.',
-    icon: 'wallet',
-    secondaryIcon: 'trending-up',
-    tertiaryIcon: 'cash',
-    quaternaryIcon: 'stats-chart',
+    icon: 'logo', // Special case - will use logo image
     gradient: ['#2D1B69', '#1A0F3D', '#0A0520'],
     iconColor: '#4A3A8C',
     accentColor: '#7B68EE',
+    showLogo: true,
   },
   {
     title: 'Practice Risk-Free',
     description: 'Master trading strategies with paper trading before investing real money. Build confidence without financial risk.',
     icon: 'school',
-    secondaryIcon: 'shield-checkmark',
-    tertiaryIcon: 'bulb',
-    quaternaryIcon: 'trophy',
     gradient: ['#1B4D3E', '#0F2922', '#051510'],
     iconColor: '#2D6A4F',
     accentColor: '#52B788',
+    showLogo: false,
   },
   {
     title: 'Real-Time Market Data',
     description: 'Live prices from NSE & BSE. Stay informed with instant market updates and real-time analytics.',
     icon: 'pulse',
-    secondaryIcon: 'analytics',
-    tertiaryIcon: 'speedometer',
-    quaternaryIcon: 'flash',
     gradient: ['#4D1B1B', '#290F0F', '#150505'],
     iconColor: '#6A2D2D',
     accentColor: '#E76F51',
+    showLogo: false,
   },
   {
     title: 'Professional Tools',
     description: 'Advanced charts, indicators, and analytics to make informed decisions like a pro trader.',
     icon: 'bar-chart',
-    secondaryIcon: 'pie-chart',
-    tertiaryIcon: 'calculator',
-    quaternaryIcon: 'telescope',
     gradient: ['#1B3A4D', '#0F1F29', '#050F15'],
     iconColor: '#2D5A6A',
     accentColor: '#4A90E2',
+    showLogo: false,
   },
   {
     title: 'Start Your Journey',
     description: 'Join thousands of traders building their financial future with confidence and smart strategies.',
     icon: 'rocket',
-    secondaryIcon: 'star',
-    tertiaryIcon: 'diamond',
-    quaternaryIcon: 'flame',
     gradient: ['#4D3A1B', '#291F0F', '#150F05'],
     iconColor: '#6A5A2D',
     accentColor: '#F4A261',
+    showLogo: false,
   },
 ];
 
@@ -82,6 +72,7 @@ const onboardingSlides = [
 export default function OnboardingScreen() {
   const router = useRouter();
   const { theme, isDark } = useTheme();
+  const { setHasSeenOnboarding } = useAuthStore();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   
@@ -144,11 +135,15 @@ export default function OnboardingScreen() {
         }),
       ]).start();
     } else {
+      // Mark onboarding as seen before navigating
+      setHasSeenOnboarding(true);
       router.replace('/(auth)/register');
     }
   };
 
   const handleSkip = () => {
+    // Mark onboarding as seen before navigating
+    setHasSeenOnboarding(true);
     router.replace('/(auth)/register');
   };
 
@@ -157,15 +152,6 @@ export default function OnboardingScreen() {
       colors={['#2D1B69', '#1A0F3D', '#0A0520']}
       style={createStyles(theme).container}
     >
-      {/* Header with logo */}
-      <View style={createStyles(theme).header}>
-        <Image
-          source={require('../../assets/images/Wealth.png')}
-          style={createStyles(theme).headerLogo}
-          resizeMode="contain"
-        />
-      </View>
-
       <TouchableOpacity style={createStyles(theme).skipButton} onPress={handleSkip}>
         <View style={createStyles(theme).skipBlur}>
           <Text style={createStyles(theme).skipText}>Skip</Text>
@@ -198,20 +184,28 @@ export default function OnboardingScreen() {
                 },
               ]}
             >
-              {/* Central icon with icons on rings - only central icon, no floating icons */}
+              {/* Central icon with rings - only one icon in center */}
               <View style={createStyles(theme).iconOrbitContainer}>
                 {/* Dashed orbit circles */}
                 <View style={[createStyles(theme).orbitCircle1, { borderColor: `${slide.accentColor}40` }]} />
                 <View style={[createStyles(theme).orbitCircle2, { borderColor: `${slide.accentColor}30` }]} />
                 
-                {/* Central icon only */}
+                {/* Central icon - use logo for first slide, icon for others */}
                 <View style={[createStyles(theme).centralIcon, { borderColor: slide.accentColor }]}>
-                  <LinearGradient
-                    colors={[slide.iconColor, slide.gradient[0]]}
-                    style={createStyles(theme).centralIconGradient}
-                  >
-                    <Ionicons name={slide.icon as any} size={48} color="#FFFFFF" />
-                  </LinearGradient>
+                  {slide.icon === 'logo' ? (
+                    <Image
+                      source={require('../../assets/images/Wealth.png')}
+                      style={createStyles(theme).centralLogoImage}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <LinearGradient
+                      colors={[slide.iconColor, slide.gradient[0]]}
+                      style={createStyles(theme).centralIconGradient}
+                    >
+                      <Ionicons name={slide.icon as any} size={48} color="#FFFFFF" />
+                    </LinearGradient>
+                  )}
                 </View>
               </View>
 
@@ -300,25 +294,6 @@ const createStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: Platform.OS === 'ios' ? 100 : 80,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 5,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerLogo: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    marginTop: Platform.OS === 'ios' ? 40 : 20,
-  },
   skipButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 60 : 50,
@@ -340,42 +315,43 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   slide: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 32,
+    paddingTop: 60,
   },
   content: {
     alignItems: 'center',
     maxWidth: 380,
-    paddingTop: 80,
+    paddingTop: 20,
   },
   iconOrbitContainer: {
-    width: 280,
-    height: 280,
+    width: 300,
+    height: 300,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   orbitCircle1: {
     position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
     borderWidth: 2,
     borderStyle: 'dashed',
   },
   orbitCircle2: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     borderWidth: 2,
     borderStyle: 'dashed',
   },
   centralIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     overflow: 'hidden',
     borderWidth: 3,
   },
@@ -385,12 +361,17 @@ const createStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  centralLogoImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+  },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -406,17 +387,17 @@ const createStyles = (theme: any) => StyleSheet.create({
     paddingVertical: 10,
   },
   appName: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     color: '#FFFFFF',
     textAlign: 'center',
     letterSpacing: 0.3,
   },
   description: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     fontWeight: '400',
     paddingHorizontal: 16,
   },
