@@ -7,7 +7,7 @@ class BenzingaService {
   // Direct high-quality logo URLs for stocks (fallback when Logo.dev doesn't have them)
   private directLogoUrls: Record<string, string> = {
     // Indian Banks - High quality logos
-    'SBIN': 'https://seeklogo.com/images/S/state-bank-of-india-logo-2F0B0B0B0B-seeklogo.com.png',
+    'SBIN': 'https://logoeps.com/wp-content/uploads/2014/05/state-bank-india-sbi-vector-logo.png',
     'PNB': 'https://seeklogo.com/images/P/punjab-national-bank-logo-AE0E0E0E0E-seeklogo.com.png',
     'BANKBARODA': 'https://seeklogo.com/images/B/bank-of-baroda-logo-1F1F1F1F1F-seeklogo.com.png',
     'UNIONBANK': 'https://seeklogo.com/images/U/union-bank-of-india-logo-2E2E2E2E2E-seeklogo.com.png',
@@ -50,7 +50,7 @@ class BenzingaService {
     // Finance
     'BAJAJFINSV': 'https://seeklogo.com/images/B/bajaj-finserv-logo-6Q6Q6Q6Q6Q-seeklogo.com.png',
     'HDFCLIFE': 'https://seeklogo.com/images/H/hdfc-life-logo-7R7R7R7R7R-seeklogo.com.png',
-    'LICI': 'https://seeklogo.com/images/L/lic-logo-8S8S8S8S8S-seeklogo.com.png',
+    'LICI': 'https://seeklogo.com/vector-logo/236964/lic-india',
     
     // Auto
     'EICHERMOT': 'https://seeklogo.com/images/E/eicher-motors-logo-9T9T9T9T9T-seeklogo.com.png',

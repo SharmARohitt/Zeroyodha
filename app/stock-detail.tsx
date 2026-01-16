@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,16 +26,20 @@ export default function StockDetailScreen() {
   const router = useRouter();
   const { stocks, setSelectedSymbol } = useMarketStore();
   const stock = symbol ? stocks[symbol] : null;
-  const [candleData, setCandleData] = useState<Candle[]>([]);
   const [chartType, setChartType] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
   const [logoInfo, setLogoInfo] = useState(stock ? getStockLogo(stock.symbol) : null);
+
+  // Memoize candle data to prevent regeneration on every render
+  const candleData = useMemo(() => {
+    if (symbol) {
+      return marketDataService.generateCandleData(symbol, chartType);
+    }
+    return [];
+  }, [symbol, chartType]);
 
   useEffect(() => {
     if (symbol && stock) {
       setSelectedSymbol(symbol);
-      // Generate candle data
-      const candles = marketDataService.generateCandleData(symbol, chartType);
-      setCandleData(candles);
       
       // Try to fetch real logo
       const fetchLogo = async () => {
@@ -50,7 +54,7 @@ export default function StockDetailScreen() {
       };
       fetchLogo();
     }
-  }, [symbol, chartType, stock]);
+  }, [symbol, stock]);
 
   if (!stock) {
     return (
@@ -164,13 +168,13 @@ export default function StockDetailScreen() {
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Volume</Text>
           <Text style={styles.statValue}>
-            {(stock.volume / 1000000).toFixed(2)}M
+            {(stock.volume / 1000000).toFixed(1)}M
           </Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Avg Volume</Text>
+          <Text style={styles.statLabel}>Avg Vol</Text>
           <Text style={styles.statValue}>
-            {(stock.volume / 1000000 * 1.2).toFixed(2)}M
+            {(stock.volume / 1000000 * 1.2).toFixed(1)}M
           </Text>
         </View>
       </View>
@@ -339,25 +343,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 8,
     marginBottom: 20,
   },
   statCard: {
-    width: (SCREEN_WIDTH - 56) / 3,
+    width: (SCREEN_WIDTH - 48) / 3,
     backgroundColor: '#1A1A1A',
-    padding: 16,
-    borderRadius: 12,
+    padding: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#2A2A2A',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#999',
-    marginBottom: 8,
+    marginBottom: 4,
     textTransform: 'uppercase',
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
