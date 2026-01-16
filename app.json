@@ -25,7 +25,12 @@
         "backgroundColor": "#000000"
       },
       "package": "com.wealthwarrior.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "jsEngine": "hermes"
     },
     "plugins": [
       "expo-router"
@@ -35,11 +40,22 @@
         "origin": false
       },
       "eas": {
-        "projectId": "wealth-warrior-app"
-      }
+        "projectId": "806540be-fcf7-4b43-bbb2-fcc66aaf97aa"
+      },
+      "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyCqx2ruviL2m6lM9SQOOAAXJoI1PKCq0QY",
+      "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "wealth-warrior.firebaseapp.com",
+      "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "wealth-warrior",
+      "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "wealth-warrior.appspot.com",
+      "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "1048636694768",
+      "EXPO_PUBLIC_FIREBASE_APP_ID": "1:1048636694768:web:82b25d601597890d8d6235",
+      "EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-KBMKKWP64E",
+      "EXPO_PUBLIC_FINNHUB_API_KEY": "d5gc699r01qie3lhqqtgd5gc699r01qie3lhqqu0",
+      "EXPO_PUBLIC_ALPHAVANTAGE_API_KEY": "8G3T0KX8IY3K3I3D",
+      "EXPO_PUBLIC_NEWSAPI_API_KEY": "5f3b8f6a4bmsh0f6f8f4c1f2f6e3p1e3f4ajsn3d5e9b7c9e2d",
+      "EXPO_PUBLIC_RAPIDAPI_KEY": "3d5e9b7c9e",
+      "EXPO_PUBLIC_BENZINGA_API_KEY": "bz.S2EJKEA5CO7YELLCJOE7E7GSUI5QZCIR",
+      "EXPO_PUBLIC_LOGODEV_PUBLISHABLE_KEY": "pk_b3fjHh9gS_qpOFOx9YiESg"
     },
-    "scheme": "wealth-warrior",
-    "owner": "your-expo-username"
+    "scheme": "wealth-warrior"
   }
 }
-

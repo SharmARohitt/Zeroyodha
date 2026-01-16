@@ -10,6 +10,8 @@ import {
   Modal,
   TextInput,
   FlatList,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { useMarketStore } from '../store/useMarketStore';
 import { formatCurrency, formatPercent } from '../utils/formatters';
@@ -22,6 +24,168 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.28;
 const CARD_SPACING = 6;
 const CUSTOM_STOCKS_KEY = '@custom_carousel_stocks';
+const SWIPE_THRESHOLD = 50;
+
+// Custom Stock Card with Swipe-to-Remove Animation
+interface CustomStockCardProps {
+  stock: any;
+  theme: any;
+  onRemove: (symbol: string) => void;
+  onPress: () => void;
+}
+
+const CustomStockCard: React.FC<CustomStockCardProps> = ({ stock, theme, onRemove, onPress }) => {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const [isGrabbed, setIsGrabbed] = useState(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only activate if moving vertically more than horizontally
+        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderGrant: () => {
+        setIsGrabbed(true);
+        Animated.spring(scale, {
+          toValue: 0.95,
+          useNativeDriver: true,
+        }).start();
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Only allow downward movement
+        if (gestureState.dy > 0) {
+          pan.setValue({ x: 0, y: gestureState.dy });
+          // Fade out as user swipes down
+          const fadeValue = Math.max(0, 1 - gestureState.dy / 150);
+          opacity.setValue(fadeValue);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        setIsGrabbed(false);
+        
+        if (gestureState.dy > SWIPE_THRESHOLD) {
+          // Swipe threshold met - remove the stock
+          Animated.parallel([
+            Animated.timing(pan, {
+              toValue: { x: 0, y: 200 },
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scale, {
+              toValue: 0.8,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            onRemove(stock.symbol);
+          });
+        } else {
+          // Snap back to original position
+          Animated.parallel([
+            Animated.spring(pan, {
+              toValue: { x: 0, y: 0 },
+              useNativeDriver: true,
+            }),
+            Animated.spring(scale, {
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+            Animated.spring(opacity, {
+              toValue: 1,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }
+      },
+    })
+  ).current;
+
+  const isPositive = stock.change >= 0;
+  const changeColor = isPositive ? theme.profit : theme.loss;
+  const [swipeDistance, setSwipeDistance] = useState(0);
+
+  // Listen to pan changes
+  useEffect(() => {
+    const listenerId = pan.y.addListener(({ value }) => {
+      setSwipeDistance(value);
+    });
+    return () => {
+      pan.y.removeListener(listenerId);
+    };
+  }, []);
+
+  const showRemoveHint = isGrabbed && swipeDistance > 10;
+  const showReleaseHint = isGrabbed && swipeDistance > SWIPE_THRESHOLD;
+
+  return (
+    <Animated.View
+      style={[
+        {
+          transform: [
+            { translateX: pan.x },
+            { translateY: pan.y },
+            { scale: scale },
+          ],
+          opacity: opacity,
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <TouchableOpacity
+        style={[createStyles(theme).card, createStyles(theme).customCard]}
+        activeOpacity={0.9}
+        onPress={onPress}
+        disabled={isGrabbed}
+      >
+        <View style={createStyles(theme).cardHeader}>
+          <Text style={createStyles(theme).indexName} numberOfLines={1}>{stock.symbol}</Text>
+          <TouchableOpacity 
+            style={createStyles(theme).removeButton}
+            onPress={() => onRemove(stock.symbol)}
+          >
+            <Ionicons name="close-circle" size={14} color={theme.textMuted} />
+          </TouchableOpacity>
+        </View>
+        
+        <View style={createStyles(theme).cardBody}>
+          <Text style={createStyles(theme).indexValue}>
+            {formatCurrency(stock.lastPrice)}
+          </Text>
+          <View style={[createStyles(theme).changeContainer, { backgroundColor: changeColor + '15' }]}>
+            <Text style={[createStyles(theme).changeText, { color: changeColor }]}>
+              {isPositive ? '▲' : '▼'} {formatPercent(Math.abs(stock.changePercent))}
+            </Text>
+          </View>
+        </View>
+
+        {/* Swipe Hint */}
+        {showRemoveHint && (
+          <View style={createStyles(theme).swipeHint}>
+            <Ionicons 
+              name="arrow-down" 
+              size={12} 
+              color={showReleaseHint ? theme.loss : theme.textMuted} 
+            />
+            <Text style={[
+              createStyles(theme).swipeHintText,
+              showReleaseHint && { color: theme.loss, fontWeight: 'bold' }
+            ]}>
+              {showReleaseHint ? 'Release to Remove' : 'Swipe Down'}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
 
 export default function TopIndicesCarousel() {
   const { stocks } = useMarketStore();
@@ -72,21 +236,8 @@ export default function TopIndicesCarousel() {
   };
 
   const handleRemoveStock = (symbol: string) => {
-    Alert.alert(
-      'Remove Stock',
-      `Remove ${symbol} from your custom list?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => {
-            const updated = customStocks.filter(s => s !== symbol);
-            saveCustomStocks(updated);
-          },
-        },
-      ]
-    );
+    const updated = customStocks.filter(s => s !== symbol);
+    saveCustomStocks(updated);
   };
 
   // Get major indices
@@ -164,44 +315,18 @@ export default function TopIndicesCarousel() {
         })}
 
         {/* Custom Stocks Cards */}
-        {customStocksData.map((stock) => {
-          const isPositive = stock.change >= 0;
-          const changeColor = isPositive ? theme.profit : theme.loss;
-
-          return (
-            <TouchableOpacity
-              key={`custom-${stock.symbol}`}
-              style={[createStyles(theme).card, createStyles(theme).customCard]}
-              activeOpacity={0.9}
-              onPress={() => router.push({
-                pathname: '/stock-detail',
-                params: { symbol: stock.symbol },
-              })}
-              onLongPress={() => handleRemoveStock(stock.symbol)}
-            >
-              <View style={createStyles(theme).cardHeader}>
-                <Text style={createStyles(theme).indexName} numberOfLines={1}>{stock.symbol}</Text>
-                <TouchableOpacity 
-                  style={createStyles(theme).removeButton}
-                  onPress={() => handleRemoveStock(stock.symbol)}
-                >
-                  <Ionicons name="close-circle" size={14} color={theme.textMuted} />
-                </TouchableOpacity>
-              </View>
-              
-              <View style={createStyles(theme).cardBody}>
-                <Text style={createStyles(theme).indexValue}>
-                  {formatCurrency(stock.lastPrice)}
-                </Text>
-                <View style={[createStyles(theme).changeContainer, { backgroundColor: changeColor + '15' }]}>
-                  <Text style={[createStyles(theme).changeText, { color: changeColor }]}>
-                    {isPositive ? '▲' : '▼'} {formatPercent(Math.abs(stock.changePercent))}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+        {customStocksData.map((stock) => (
+          <CustomStockCard
+            key={`custom-${stock.symbol}`}
+            stock={stock}
+            theme={theme}
+            onRemove={handleRemoveStock}
+            onPress={() => router.push({
+              pathname: '/stock-detail',
+              params: { symbol: stock.symbol },
+            })}
+          />
+        ))}
 
         {/* Add Custom Stock Card */}
         {customStocks.length < 5 && (
@@ -454,6 +579,21 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 14,
     color: theme.textMuted,
     marginTop: 12,
+  },
+  swipeHint: {
+    position: 'absolute',
+    bottom: 2,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+  },
+  swipeHintText: {
+    fontSize: 8,
+    color: theme.textMuted,
+    fontWeight: '600',
   },
 });
 

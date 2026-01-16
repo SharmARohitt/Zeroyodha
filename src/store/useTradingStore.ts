@@ -134,6 +134,7 @@ export const useTradingStore = create<TradingState>((set, get) => ({
         });
       } else if (mode === 'PAPER') {
         set({
+          mode,
           funds: {
             available: PAPER_INITIAL_FUNDS,
             used: 0,
@@ -141,9 +142,24 @@ export const useTradingStore = create<TradingState>((set, get) => ({
             mode: 'PAPER',
           },
         });
+      } else {
+        set({ mode });
       }
     } catch (error) {
       console.error('Error loading trading data:', error);
+      // Set default state on error
+      set({
+        mode: 'PAPER',
+        orders: [],
+        positions: [],
+        holdings: [],
+        funds: {
+          available: PAPER_INITIAL_FUNDS,
+          used: 0,
+          total: PAPER_INITIAL_FUNDS,
+          mode: 'PAPER',
+        },
+      });
     }
   },
 

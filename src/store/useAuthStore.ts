@@ -79,11 +79,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Check if user is authenticated
       const storedUser = await AsyncStorage.getItem(USER_KEY);
       if (storedUser) {
-        const user = JSON.parse(storedUser);
-        const isValid = await authService.verifyAuth();
-        if (isValid) {
-          set({ user, isAuthenticated: true, isLoading: false, hasSeenOnboarding });
-        } else {
+        try {
+          const user = JSON.parse(storedUser);
+          const isValid = await authService.verifyAuth();
+          if (isValid) {
+            set({ user, isAuthenticated: true, isLoading: false, hasSeenOnboarding });
+          } else {
+            await AsyncStorage.removeItem(USER_KEY);
+            set({ user: null, isAuthenticated: false, isLoading: false, hasSeenOnboarding });
+          }
+        } catch (parseError) {
+          console.error('Error parsing stored user:', parseError);
           await AsyncStorage.removeItem(USER_KEY);
           set({ user: null, isAuthenticated: false, isLoading: false, hasSeenOnboarding });
         }
@@ -91,7 +97,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, hasSeenOnboarding });
       }
     } catch (error) {
-      set({ isLoading: false });
+      console.error('Error checking auth:', error);
+      set({ isLoading: false, user: null, isAuthenticated: false });
     }
   },
 

@@ -102,56 +102,66 @@ export const useMarketStore = create<MarketState>((set, get) => ({
   },
 
   initializeMarketData: async () => {
-    const stocks = await marketDataService.getInitialStocks();
-    const stocksMap: Record<string, Stock> = {};
-    stocks.forEach((stock) => {
-      stocksMap[stock.symbol] = stock;
-    });
-    
-    // Preload stock logos from Benzinga in background
-    const stockSymbols = stocks.map(s => s.symbol);
-    preloadStockLogos(stockSymbols).catch(err => 
-      console.warn('Failed to preload logos:', err)
-    );
-    
-    // Initialize multiple default watchlists
-    const existingWatchlists = get().watchlists;
-    if (existingWatchlists.length === 0) {
-      const basicWatchlist: Watchlist = {
-        id: 'basic',
-        name: 'Basic',
-        symbols: stocks.slice(0, 15).map((s) => s.symbol),
-        createdAt: new Date(),
-      };
-      
-      const longTermWatchlist: Watchlist = {
-        id: 'long-term',
-        name: 'Long Term',
-        symbols: stocks.slice(15, 30).map((s) => s.symbol),
-        createdAt: new Date(),
-      };
-      
-      const watchlist3: Watchlist = {
-        id: 'watchlist-3',
-        name: 'Watchlist 3',
-        symbols: stocks.slice(30, 45).map((s) => s.symbol),
-        createdAt: new Date(),
-      };
-
-      set({
-        stocks: stocksMap,
-        watchlists: [basicWatchlist, longTermWatchlist, watchlist3],
-        currentWatchlist: basicWatchlist.id,
+    try {
+      const stocks = await marketDataService.getInitialStocks();
+      const stocksMap: Record<string, Stock> = {};
+      stocks.forEach((stock) => {
+        stocksMap[stock.symbol] = stock;
       });
-    } else {
-      // Just update stocks if watchlists already exist
-      set({ stocks: stocksMap });
-    }
+      
+      // Preload stock logos from Benzinga in background
+      const stockSymbols = stocks.map(s => s.symbol);
+      preloadStockLogos(stockSymbols).catch(err => 
+        console.warn('Failed to preload logos:', err)
+      );
+      
+      // Initialize multiple default watchlists
+      const existingWatchlists = get().watchlists;
+      if (existingWatchlists.length === 0) {
+        const basicWatchlist: Watchlist = {
+          id: 'basic',
+          name: 'Basic',
+          symbols: stocks.slice(0, 15).map((s) => s.symbol),
+          createdAt: new Date(),
+        };
+        
+        const longTermWatchlist: Watchlist = {
+          id: 'long-term',
+          name: 'Long Term',
+          symbols: stocks.slice(15, 30).map((s) => s.symbol),
+          createdAt: new Date(),
+        };
+        
+        const watchlist3: Watchlist = {
+          id: 'watchlist-3',
+          name: 'Watchlist 3',
+          symbols: stocks.slice(30, 45).map((s) => s.symbol),
+          createdAt: new Date(),
+        };
 
-    // Start market data updates
-    marketDataService.startUpdates((data) => {
-      get().updateMarketData(data);
-    });
+        set({
+          stocks: stocksMap,
+          watchlists: [basicWatchlist, longTermWatchlist, watchlist3],
+          currentWatchlist: basicWatchlist.id,
+        });
+      } else {
+        // Just update stocks if watchlists already exist
+        set({ stocks: stocksMap });
+      }
+
+      // Start market data updates
+      marketDataService.startUpdates((data) => {
+        get().updateMarketData(data);
+      });
+    } catch (error) {
+      console.error('Error initializing market data:', error);
+      // Set empty state to prevent crashes
+      set({
+        stocks: {},
+        watchlists: [],
+        currentWatchlist: null,
+      });
+    }
   },
 
   searchStocks: (query: string) => {

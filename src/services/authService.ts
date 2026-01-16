@@ -11,21 +11,37 @@ import {
   updateProfile,
   User as FirebaseUser,
 } from 'firebase/auth';
+import Constants from 'expo-constants';
 import { User } from '../types';
+
+// Get environment variables with fallback to Constants.expoConfig.extra
+const getEnvVar = (key: string): string => {
+  return process.env[key] || Constants.expoConfig?.extra?.[key] || '';
+};
 
 // Firebase config
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID!
+  apiKey: getEnvVar('EXPO_PUBLIC_FIREBASE_API_KEY'),
+  authDomain: getEnvVar('EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN'),
+  projectId: getEnvVar('EXPO_PUBLIC_FIREBASE_PROJECT_ID'),
+  storageBucket: getEnvVar('EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: getEnvVar('EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: getEnvVar('EXPO_PUBLIC_FIREBASE_APP_ID'),
+  measurementId: getEnvVar('EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID')
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Initialize Firebase with error handling
+let app: any = null;
+let auth: any = null;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  console.log('Firebase initialized successfully');
+} catch (error) {
+  console.error('Firebase initialization error:', error);
+  // Auth will remain null - methods will throw appropriate errors
+}
 
 const mapFirebaseUser = (user: FirebaseUser): User => ({
   uid: user.uid,
@@ -37,7 +53,14 @@ const mapFirebaseUser = (user: FirebaseUser): User => ({
 });
 
 class AuthService {
+  private checkAuth() {
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized. Please check your configuration.');
+    }
+  }
+
   async register(email: string, password: string, displayName?: string): Promise<User> {
+    this.checkAuth();
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     
     if (displayName && userCredential.user) {
@@ -52,11 +75,13 @@ class AuthService {
   }
 
   async login(email: string, password: string): Promise<User> {
+    this.checkAuth();
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return mapFirebaseUser(userCredential.user);
   }
 
   async signInWithGoogle(idToken: string): Promise<{ user: User; isNewUser: boolean }> {
+    this.checkAuth();
     try {
       const credential = GoogleAuthProvider.credential(idToken);
       const userCredential = await signInWithCredential(auth, credential);
@@ -81,10 +106,12 @@ class AuthService {
   }
 
   async logout(): Promise<void> {
+    this.checkAuth();
     await signOut(auth);
   }
 
   async verifyAuth(): Promise<boolean> {
+    if (!auth) return false;
     return new Promise((resolve) => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         unsubscribe();
@@ -94,11 +121,16 @@ class AuthService {
   }
 
   getCurrentUser(): User | null {
+    if (!auth) return null;
     const user = auth.currentUser;
     return user ? mapFirebaseUser(user) : null;
   }
 
   onAuthStateChange(callback: (user: User | null) => void) {
+    if (!auth) {
+      callback(null);
+      return () => {};
+    }
     return onAuthStateChanged(auth, (firebaseUser) => {
       callback(firebaseUser ? mapFirebaseUser(firebaseUser) : null);
     });
