@@ -2,9 +2,12 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { getTabBarDimensions, getIconSize } from '../../src/utils/responsive';
 
 export default function TabsLayout() {
   const { theme, isDark } = useTheme();
+  const tabBarDimensions = getTabBarDimensions();
+  const iconSize = getIconSize(24);
 
   return (
     <Tabs
@@ -20,9 +23,7 @@ export default function TabsLayout() {
             ? (isDark ? 'rgba(66, 165, 245, 0.3)' : 'rgba(30, 136, 229, 0.3)')
             : theme.border,
           borderTopWidth: Platform.OS === 'ios' ? 0.5 : 1,
-          height: Platform.OS === 'ios' ? 95 : 75,
-          paddingBottom: Platform.OS === 'ios' ? 36 : 22,
-          paddingTop: Platform.OS === 'ios' ? 8 : 12,
+          ...tabBarDimensions,
           elevation: 0,
           shadowOpacity: Platform.OS === 'ios' ? 0.3 : 0,
           shadowColor: Platform.OS === 'ios' ? theme.primary : theme.background,
@@ -55,7 +56,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               name={focused ? "bookmark" : "bookmark-outline"} 
-              size={Platform.OS === 'ios' ? 24 : 22} 
+              size={iconSize} 
               color={color}
               style={Platform.OS === 'ios' && focused ? { 
                 shadowColor: color, 
@@ -74,7 +75,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               name={focused ? "document-text" : "document-text-outline"} 
-              size={Platform.OS === 'ios' ? 24 : 22} 
+              size={iconSize} 
               color={color}
               style={Platform.OS === 'ios' && focused ? { 
                 shadowColor: color, 
@@ -93,7 +94,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               name={focused ? "briefcase" : "briefcase-outline"} 
-              size={Platform.OS === 'ios' ? 24 : 22} 
+              size={iconSize} 
               color={color}
               style={Platform.OS === 'ios' && focused ? { 
                 shadowColor: color, 
@@ -112,7 +113,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               name={focused ? "hammer" : "hammer-outline"} 
-              size={Platform.OS === 'ios' ? 24 : 22} 
+              size={iconSize} 
               color={color}
               style={Platform.OS === 'ios' && focused ? { 
                 shadowColor: color, 
@@ -131,7 +132,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons 
               name={focused ? "person" : "person-outline"} 
-              size={Platform.OS === 'ios' ? 24 : 22} 
+              size={iconSize} 
               color={color}
               style={Platform.OS === 'ios' && focused ? { 
                 shadowColor: color, 
@@ -146,4 +147,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

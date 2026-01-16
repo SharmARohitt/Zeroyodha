@@ -1,20 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Holding } from '../types';
 import { useMarketStore } from '../store/useMarketStore';
 import { Ionicons } from '@expo/vector-icons';
-
-// Theme colors
-const colors = {
-  primary: '#00D4FF', // Blue Neon
-  profit: '#00C853',
-  loss: '#FF5252',
-  card: '#1A1A1A',
-  border: '#2A2A2A',
-  text: '#FFFFFF',
-  textMuted: '#666666',
-  textSecondary: '#999999',
-};
+import { useRouter } from 'expo-router';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HoldingCardProps {
   holding: Holding;
@@ -22,6 +12,8 @@ interface HoldingCardProps {
 
 export default function HoldingCard({ holding }: HoldingCardProps) {
   const { stocks } = useMarketStore();
+  const { theme } = useTheme();
+  const router = useRouter();
   const stock = stocks[holding.symbol];
   const currentPrice = stock?.lastPrice || holding.lastPrice;
 
@@ -31,76 +23,120 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
   const pnlPercent = (pnl / holding.investment) * 100;
 
   const isPositive = pnl >= 0;
-  const pnlColor = isPositive ? '#00C853' : '#FF5252';
+  const pnlColor = isPositive ? theme.profit : theme.loss;
 
   // Calculate day change (mock data - would come from real-time updates)
   const dayChange = stock?.change || 0;
   const dayChangePercent = stock?.changePercent || 0;
   const isDayPositive = dayChange >= 0;
-  const dayChangeColor = isDayPositive ? '#00C853' : '#FF5252';
+  const dayChangeColor = isDayPositive ? theme.profit : theme.loss;
+
+  const handleSell = () => {
+    Alert.alert(
+      'Sell Stock',
+      `Do you want to sell ${holding.symbol}?\n\nYou own: ${holding.quantity} shares\nCurrent Price: ₹${currentPrice.toFixed(2)}\nTotal Value: ₹${currentValue.toLocaleString('en-IN')}`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sell',
+          style: 'destructive',
+          onPress: () => {
+            router.push({
+              pathname: '/order',
+              params: { 
+                symbol: holding.symbol,
+                side: 'SELL',
+                maxQuantity: holding.quantity.toString(),
+              },
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  const handleBuy = () => {
+    router.push({
+      pathname: '/order',
+      params: { 
+        symbol: holding.symbol,
+        side: 'BUY',
+      },
+    });
+  };
+
+  const handleCardPress = () => {
+    router.push({
+      pathname: '/stock-detail',
+      params: { symbol: holding.symbol },
+    });
+  };
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.9}>
-      <View style={styles.header}>
-        <View style={styles.stockInfo}>
-          <Text style={styles.symbol}>{holding.symbol}</Text>
-          <Text style={styles.exchange}>{holding.exchange}</Text>
+    <TouchableOpacity style={createStyles(theme).card} activeOpacity={0.9} onPress={handleCardPress}>
+      <View style={createStyles(theme).header}>
+        <View style={createStyles(theme).stockInfo}>
+          <Text style={createStyles(theme).symbol}>{holding.symbol}</Text>
+          <Text style={createStyles(theme).exchange}>{holding.exchange}</Text>
         </View>
-        <View style={styles.rightHeader}>
-          <View style={styles.quantityContainer}>
-            <Text style={styles.quantity}>{holding.quantity}</Text>
+        <View style={createStyles(theme).rightHeader}>
+          <View style={createStyles(theme).quantityContainer}>
+            <Text style={createStyles(theme).quantity}>{holding.quantity}</Text>
           </View>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="ellipsis-vertical" size={16} color="#666" />
-          </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.priceSection}>
-        <View style={styles.priceRow}>
-          <Text style={styles.currentPrice}>₹{currentPrice.toFixed(2)}</Text>
-          <View style={styles.dayChangeContainer}>
-            <Text style={[styles.dayChange, { color: dayChangeColor }]}>
+      <View style={createStyles(theme).priceSection}>
+        <View style={createStyles(theme).priceRow}>
+          <Text style={createStyles(theme).currentPrice}>₹{currentPrice.toFixed(2)}</Text>
+          <View style={createStyles(theme).dayChangeContainer}>
+            <Text style={[createStyles(theme).dayChange, { color: dayChangeColor }]}>
               {isDayPositive ? '+' : ''}₹{dayChange.toFixed(2)}
             </Text>
-            <Text style={[styles.dayChangePercent, { color: dayChangeColor }]}>
+            <Text style={[createStyles(theme).dayChangePercent, { color: dayChangeColor }]}>
               ({isDayPositive ? '+' : ''}{dayChangePercent.toFixed(2)}%)
             </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.details}>
-        <View style={styles.detailRow}>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Avg</Text>
-            <Text style={styles.detailValue}>₹{holding.averagePrice.toFixed(2)}</Text>
+      <View style={createStyles(theme).details}>
+        <View style={createStyles(theme).detailRow}>
+          <View style={createStyles(theme).detailItem}>
+            <Text style={createStyles(theme).detailLabel}>Avg</Text>
+            <Text style={createStyles(theme).detailValue}>₹{holding.averagePrice.toFixed(2)}</Text>
           </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Investment</Text>
-            <Text style={styles.detailValue}>₹{holding.investment.toLocaleString('en-IN')}</Text>
+          <View style={createStyles(theme).detailItem}>
+            <Text style={createStyles(theme).detailLabel}>Investment</Text>
+            <Text style={createStyles(theme).detailValue}>₹{holding.investment.toLocaleString('en-IN')}</Text>
           </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Current</Text>
-            <Text style={styles.detailValue}>₹{currentValue.toLocaleString('en-IN')}</Text>
+          <View style={createStyles(theme).detailItem}>
+            <Text style={createStyles(theme).detailLabel}>Current</Text>
+            <Text style={createStyles(theme).detailValue}>₹{currentValue.toLocaleString('en-IN')}</Text>
           </View>
         </View>
         
-        <View style={[styles.pnlRow]}>
-          <View style={styles.pnlContainer}>
-            <Text style={[styles.pnlValue, { color: pnlColor }]}>
+        <View style={[createStyles(theme).pnlRow]}>
+          <View style={createStyles(theme).pnlContainer}>
+            <Text style={[createStyles(theme).pnlValue, { color: pnlColor }]}>
               {isPositive ? '+' : ''}₹{Math.abs(pnl).toFixed(2)}
             </Text>
-            <Text style={[styles.pnlPercent, { color: pnlColor }]}>
+            <Text style={[createStyles(theme).pnlPercent, { color: pnlColor }]}>
               ({isPositive ? '+' : ''}{pnlPercent.toFixed(2)}%)
             </Text>
           </View>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity style={[styles.actionButton, styles.sellButton]}>
-              <Text style={styles.sellButtonText}>SELL</Text>
+          <View style={createStyles(theme).actionButtons}>
+            <TouchableOpacity 
+              style={[createStyles(theme).actionButton, createStyles(theme).sellButton]}
+              onPress={handleSell}
+            >
+              <Text style={createStyles(theme).sellButtonText}>SELL</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.buyButton]}>
-              <Text style={styles.buyButtonText}>BUY</Text>
+            <TouchableOpacity 
+              style={[createStyles(theme).actionButton, createStyles(theme).buyButton]}
+              onPress={handleBuy}
+            >
+              <Text style={createStyles(theme).buyButtonText}>BUY</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -109,14 +145,14 @@ export default function HoldingCard({ holding }: HoldingCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: any) => StyleSheet.create({
   card: {
-    backgroundColor: colors.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: theme.border,
   },
   header: {
     flexDirection: 'row',
@@ -130,12 +166,12 @@ const styles = StyleSheet.create({
   symbol: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
     marginBottom: 2,
   },
   exchange: {
     fontSize: 11,
-    color: colors.textMuted,
+    color: theme.textMuted,
   },
   rightHeader: {
     flexDirection: 'row',
@@ -143,18 +179,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   quantityContainer: {
-    backgroundColor: colors.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
   },
   quantity: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     fontWeight: '600',
-  },
-  menuButton: {
-    padding: 4,
   },
   priceSection: {
     marginBottom: 12,
@@ -167,7 +200,7 @@ const styles = StyleSheet.create({
   currentPrice: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.text,
+    color: theme.text,
   },
   dayChangeContainer: {
     alignItems: 'flex-end',
@@ -182,7 +215,7 @@ const styles = StyleSheet.create({
   },
   details: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
     paddingTop: 12,
   },
   detailRow: {
@@ -196,12 +229,12 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 11,
-    color: colors.textSecondary,
+    color: theme.textSecondary,
     marginBottom: 4,
   },
   detailValue: {
     fontSize: 13,
-    color: colors.text,
+    color: theme.text,
     fontWeight: '600',
   },
   pnlRow: {
@@ -210,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: theme.border,
   },
   pnlContainer: {
     flex: 1,
@@ -235,18 +268,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sellButton: {
-    backgroundColor: colors.loss,
+    backgroundColor: theme.loss,
   },
   buyButton: {
-    backgroundColor: colors.profit,
+    backgroundColor: theme.profit,
   },
   sellButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     fontWeight: '600',
   },
   buyButtonText: {
-    color: colors.text,
+    color: theme.text,
     fontSize: 12,
     fontWeight: '600',
   },

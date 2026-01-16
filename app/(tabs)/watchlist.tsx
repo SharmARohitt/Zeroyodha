@@ -24,6 +24,7 @@ import Toast from '../../src/components/Toast';
 import NotificationsModal from '../../src/components/NotificationsModal';
 import { notificationService } from '../../src/services/notificationService';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { responsive, getHeaderPadding, getLogoSize, getTitleFontSize, getIconSize } from '../../src/utils/responsive';
 
 export default function WatchlistScreen() {
   const router = useRouter();
@@ -347,7 +348,12 @@ export default function WatchlistScreen() {
   );
 }
 
-const createStyles = (theme: any) => StyleSheet.create({
+const createStyles = (theme: any) => {
+  const headerPadding = getHeaderPadding();
+  const logoSize = getLogoSize();
+  const titleFontSize = getTitleFontSize();
+  
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
@@ -356,9 +362,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 55 : 45,
-    paddingBottom: 12,
+    ...headerPadding,
     backgroundColor: theme.surface,
     ...(Platform.OS === 'ios' && {
       shadowColor: theme.primary,
@@ -370,12 +374,12 @@ const createStyles = (theme: any) => StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: responsive.scaleWidth(10),
   },
   logo: {
-    width: Platform.OS === 'ios' ? 56 : 52,
-    height: Platform.OS === 'ios' ? 56 : 52,
-    borderRadius: Platform.OS === 'ios' ? 14 : 12,
+    width: logoSize,
+    height: logoSize,
+    borderRadius: logoSize / 4,
     ...(Platform.OS === 'ios' && {
       shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 2 },
@@ -384,7 +388,7 @@ const createStyles = (theme: any) => StyleSheet.create({
     }),
   },
   headerTitle: {
-    fontSize: Platform.OS === 'ios' ? 24 : 22,
+    fontSize: titleFontSize,
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
     color: theme.primary,
     ...(Platform.OS === 'ios' && {
@@ -397,24 +401,24 @@ const createStyles = (theme: any) => StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: responsive.scaleWidth(12),
   },
   headerButton: {
-    padding: Platform.OS === 'ios' ? 8 : 6,
+    padding: responsive.scaleWidth(Platform.OS === 'ios' ? 8 : 6),
     position: 'relative',
-    borderRadius: Platform.OS === 'ios' ? 12 : 8,
+    borderRadius: responsive.scaleWidth(Platform.OS === 'ios' ? 12 : 8),
     ...(Platform.OS === 'ios' && {
       backgroundColor: theme.card + 'CC',
     }),
   },
   notificationBadge: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 4 : 2,
-    right: Platform.OS === 'ios' ? 4 : 2,
+    top: responsive.scaleHeight(Platform.OS === 'ios' ? 4 : 2),
+    right: responsive.scaleWidth(Platform.OS === 'ios' ? 4 : 2),
     backgroundColor: theme.primary,
-    borderRadius: 12,
-    minWidth: Platform.OS === 'ios' ? 22 : 20,
-    height: Platform.OS === 'ios' ? 22 : 20,
+    borderRadius: responsive.scaleWidth(12),
+    minWidth: responsive.scaleWidth(Platform.OS === 'ios' ? 22 : 20),
+    height: responsive.scaleHeight(Platform.OS === 'ios' ? 22 : 20),
     justifyContent: 'center',
     alignItems: 'center',
     ...(Platform.OS === 'ios' && {
@@ -428,26 +432,26 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   notificationBadgeText: {
     color: theme.text,
-    fontSize: Platform.OS === 'ios' ? 11 : 10,
+    fontSize: responsive.scaleFontSize(Platform.OS === 'ios' ? 11 : 10),
     fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === 'ios' ? 16 : 12,
+    paddingHorizontal: responsive.scaleWidth(16),
+    paddingVertical: responsive.scaleHeight(Platform.OS === 'ios' ? 16 : 12),
     backgroundColor: theme.surface,
     borderBottomWidth: Platform.OS === 'ios' ? 0.5 : 1,
     borderBottomColor: Platform.OS === 'ios' ? theme.primary + '33' : theme.card,
-    gap: 12,
+    gap: responsive.scaleWidth(12),
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.card,
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
-    paddingHorizontal: 12,
+    borderRadius: responsive.scaleWidth(Platform.OS === 'ios' ? 12 : 10),
+    paddingHorizontal: responsive.scaleWidth(12),
     height: Platform.OS === 'ios' ? 44 : 42,
     borderWidth: Platform.OS === 'ios' ? 0.5 : 1,
     borderColor: Platform.OS === 'ios' ? theme.primary + '4D' : theme.border,
@@ -543,4 +547,4 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontWeight: '600',
   },
 });
-
+};

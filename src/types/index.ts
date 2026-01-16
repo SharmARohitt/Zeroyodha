@@ -92,17 +92,87 @@ export interface Funds {
   mode: TradingMode;
 }
 
+export interface IPOSubscriptionData {
+  qib: {
+    sharesOffered: number;
+    sharesApplied: number;
+    timesSubscribed: number;
+  };
+  nii: {
+    sharesOffered: number;
+    sharesApplied: number;
+    timesSubscribed: number;
+  };
+  retail: {
+    sharesOffered: number;
+    sharesApplied: number;
+    timesSubscribed: number;
+  };
+  total: {
+    sharesOffered: number;
+    sharesApplied: number;
+    timesSubscribed: number;
+  };
+  lastUpdated: Date;
+}
+
+export interface IPOGMPData {
+  gmp: number;
+  gmpPercent: number;
+  estimatedListing: number;
+  lastUpdated: Date;
+  subject: string;
+}
+
+export interface IPOAllotmentData {
+  status: 'PENDING' | 'FINALIZED' | 'REFUND_INITIATED' | 'COMPLETED';
+  allotmentDate?: Date;
+  listingDate?: Date;
+  registrarName: string;
+  registrarWebsite: string;
+}
+
 export interface IPO {
   id: string;
   name: string;
   symbol: string;
-  exchange: Exchange;
+  exchange: 'NSE' | 'BSE' | 'BOTH';
   issueSize: number;
+  freshIssue: number;
+  offerForSale: number;
   priceRange: { min: number; max: number };
+  lotSize: number;
   openDate: Date;
   closeDate: Date;
-  listingDate: Date;
-  status: 'UPCOMING' | 'OPEN' | 'CLOSED' | 'LISTED';
+  basisOfAllotment?: Date;
+  initiationOfRefunds?: Date;
+  creditOfShares?: Date;
+  listingDate?: Date;
+  status: 'UPCOMING' | 'OPEN' | 'CLOSED' | 'ALLOTTED' | 'LISTED';
+  subscription?: IPOSubscriptionData;
+  gmp?: IPOGMPData;
+  allotment?: IPOAllotmentData;
+  companyInfo: {
+    industry: string;
+    faceValue: number;
+    marketLot: number;
+    minInvestment: number;
+    maxInvestment?: number;
+  };
+  financials?: {
+    revenue: number;
+    profit: number;
+    eps: number;
+    peRatio?: number;
+    roe?: number;
+  };
+  leadManagers: string[];
+  registrar: string;
+  reviews?: {
+    source: string;
+    rating: 'APPLY' | 'MAY_APPLY' | 'NEUTRAL' | 'AVOID';
+    reason?: string;
+  }[];
 }
 
 export interface Candle {

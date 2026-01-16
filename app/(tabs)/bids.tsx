@@ -15,39 +15,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { IPO } from '../../src/types';
 import { format } from 'date-fns';
 import { newsService, NewsArticle } from '../../src/services/newsService';
+import { ipoService } from '../../src/services/ipoService';
 import { useAuthStore } from '../../src/store/useAuthStore';
 import { useRouter } from 'expo-router';
 import TopIndicesCarousel from '../../src/components/TopIndicesCarousel';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import FloatingTradeButton from '../../src/components/FloatingTradeButton';
 
-// Mock IPO data
-const mockIPOs: IPO[] = [
-  {
-    id: '1',
-    name: 'TechCorp India',
-    symbol: 'TECHCORP',
-    exchange: 'NSE',
-    issueSize: 5000000000,
-    priceRange: { min: 100, max: 110 },
-    openDate: new Date('2024-12-15'),
-    closeDate: new Date('2024-12-17'),
-    listingDate: new Date('2024-12-20'),
-    status: 'UPCOMING',
-  },
-  {
-    id: '2',
-    name: 'GreenEnergy Ltd',
-    symbol: 'GREEN',
-    exchange: 'BSE',
-    issueSize: 3000000000,
-    priceRange: { min: 50, max: 55 },
-    openDate: new Date('2024-12-10'),
-    closeDate: new Date('2024-12-12'),
-    listingDate: new Date('2024-12-15'),
-    status: 'OPEN',
-  },
-];
+// Remove mock IPO data - now using live data from ipoService
 
 export default function BidsScreen() {
   const router = useRouter();
@@ -55,16 +30,23 @@ export default function BidsScreen() {
   const [activeTab, setActiveTab] = useState<'IPOS' | 'GSEC' | 'MUTUAL_FUNDS' | 'NEWS'>('IPOS');
   const [news, setNews] = useState<NewsArticle[]>([]);
   const [newsLoading, setNewsLoading] = useState(false);
+  const [ipos, setIpos] = useState<IPO[]>([]);
+  const [iposLoading, setIposLoading] = useState(false);
   const { user } = useAuthStore();
   const logoScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (activeTab === 'NEWS') {
       loadNews();
+    } else if (activeTab === 'IPOS') {
+      loadIPOs();
     }
   }, [activeTab]);
 
   useEffect(() => {
+    // Load IPOs on mount
+    loadIPOs();
+    
     // iOS-specific logo animation
     if (Platform.OS === 'ios') {
       Animated.loop(
@@ -83,6 +65,18 @@ export default function BidsScreen() {
       ).start();
     }
   }, []);
+
+  const loadIPOs = async () => {
+    setIposLoading(true);
+    try {
+      const ipoData = await ipoService.getIPODashboard();
+      setIpos(ipoData);
+    } catch (error) {
+      console.error('Error loading IPOs:', error);
+    } finally {
+      setIposLoading(false);
+    }
+  };
 
   const loadNews = async () => {
     setNewsLoading(true);
@@ -197,10 +191,24 @@ export default function BidsScreen() {
 
       {activeTab === 'IPOS' && (
         <FlatList
-          data={mockIPOs}
+          data={ipos}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <IPOCard ipo={item} onPress={() => handleIPOPress(item)} theme={theme} />}
           contentContainerStyle={createStyles(theme).listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={iposLoading}
+              onRefresh={loadIPOs}
+              tintColor={theme.primary}
+            />
+          }
+          ListEmptyComponent={
+            <View style={createStyles(theme).emptyContainer}>
+              <Ionicons name="document-text-outline" size={64} color={theme.textMuted} />
+              <Text style={createStyles(theme).emptyText}>No IPOs available</Text>
+              <Text style={createStyles(theme).emptySubtext}>Check back later for new offerings</Text>
+            </View>
+          }
         />
       )}
 
@@ -279,6 +287,7 @@ function IPOCard({ ipo, onPress, theme }: { ipo: IPO; onPress: () => void; theme
     UPCOMING: theme.warning,
     OPEN: theme.success,
     CLOSED: theme.textMuted,
+    ALLOTTED: theme.primary,
     LISTED: theme.primary,
   };
 
@@ -289,9 +298,11 @@ function IPOCard({ ipo, onPress, theme }: { ipo: IPO; onPress: () => void; theme
       activeOpacity={0.7}
     >
       <View style={createStyles(theme).ipoHeader}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={createStyles(theme).ipoName}>{ipo.name}</Text>
-          <Text style={createStyles(theme).ipoSymbol}>{ipo.symbol} • {ipo.exchange}</Text>
+          <Text style={createStyles(theme).ipoSymbol}>
+            {ipo.symbol} • {ipo.exchange} • {ipo.companyInfo.industry}
+          </Text>
         </View>
         <View style={[createStyles(theme).statusBadge, { backgroundColor: statusColors[ipo.status] }]}>
           <Text style={createStyles(theme).statusText}>{ipo.status}</Text>
@@ -308,25 +319,118 @@ function IPOCard({ ipo, onPress, theme }: { ipo: IPO; onPress: () => void; theme
         <View style={createStyles(theme).ipoRow}>
           <Text style={createStyles(theme).ipoLabel}>Issue Size:</Text>
           <Text style={createStyles(theme).ipoValue}>
-            ₹{(ipo.issueSize / 1000000000).toFixed(2)}B
+            ₹{(ipo.issueSize / 10000000).toFixed(0)} Cr
           </Text>
         </View>
         <View style={createStyles(theme).ipoRow}>
-          <Text style={createStyles(theme).ipoLabel}>Open Date:</Text>
+          <Text style={createStyles(theme).ipoLabel}>Lot Size:</Text>
           <Text style={createStyles(theme).ipoValue}>
-            {format(ipo.openDate, 'dd MMM yyyy')}
+            {ipo.lotSize} shares (₹{ipo.companyInfo.minInvestment.toLocaleString('en-IN')})
           </Text>
         </View>
         <View style={createStyles(theme).ipoRow}>
-          <Text style={createStyles(theme).ipoLabel}>Close Date:</Text>
+          <Text style={createStyles(theme).ipoLabel}>Open - Close:</Text>
           <Text style={createStyles(theme).ipoValue}>
-            {format(ipo.closeDate, 'dd MMM yyyy')}
+            {format(ipo.openDate, 'dd MMM')} - {format(ipo.closeDate, 'dd MMM yyyy')}
           </Text>
         </View>
+        
+        {/* GMP Data */}
+        {ipo.gmp && ipo.gmp.gmp > 0 && (
+          <View style={[createStyles(theme).gmpContainer, { backgroundColor: theme.success + '20' }]}>
+            <View style={createStyles(theme).gmpRow}>
+              <Text style={createStyles(theme).gmpLabel}>GMP:</Text>
+              <Text style={[createStyles(theme).gmpValue, { color: theme.success }]}>
+                ₹{ipo.gmp.gmp} ({ipo.gmp.gmpPercent.toFixed(2)}%)
+              </Text>
+            </View>
+            <View style={createStyles(theme).gmpRow}>
+              <Text style={createStyles(theme).gmpLabel}>Est. Listing:</Text>
+              <Text style={[createStyles(theme).gmpValue, { color: theme.success }]}>
+                ₹{ipo.gmp.estimatedListing}
+              </Text>
+            </View>
+          </View>
+        )}
+        
+        {/* Subscription Status */}
+        {ipo.subscription && ipo.status === 'OPEN' && (
+          <View style={createStyles(theme).subscriptionContainer}>
+            <Text style={createStyles(theme).subscriptionTitle}>Live Subscription Status</Text>
+            <View style={createStyles(theme).subscriptionGrid}>
+              <View style={createStyles(theme).subscriptionItem}>
+                <Text style={createStyles(theme).subscriptionLabel}>QIB</Text>
+                <Text style={[createStyles(theme).subscriptionValue, { 
+                  color: ipo.subscription.qib.timesSubscribed >= 1 ? theme.success : theme.warning 
+                }]}>
+                  {ipo.subscription.qib.timesSubscribed.toFixed(2)}x
+                </Text>
+              </View>
+              <View style={createStyles(theme).subscriptionItem}>
+                <Text style={createStyles(theme).subscriptionLabel}>NII</Text>
+                <Text style={[createStyles(theme).subscriptionValue, { 
+                  color: ipo.subscription.nii.timesSubscribed >= 1 ? theme.success : theme.warning 
+                }]}>
+                  {ipo.subscription.nii.timesSubscribed.toFixed(2)}x
+                </Text>
+              </View>
+              <View style={createStyles(theme).subscriptionItem}>
+                <Text style={createStyles(theme).subscriptionLabel}>Retail</Text>
+                <Text style={[createStyles(theme).subscriptionValue, { 
+                  color: ipo.subscription.retail.timesSubscribed >= 1 ? theme.success : theme.warning 
+                }]}>
+                  {ipo.subscription.retail.timesSubscribed.toFixed(2)}x
+                </Text>
+              </View>
+              <View style={createStyles(theme).subscriptionItem}>
+                <Text style={createStyles(theme).subscriptionLabel}>Total</Text>
+                <Text style={[createStyles(theme).subscriptionValue, { 
+                  color: ipo.subscription.total.timesSubscribed >= 1 ? theme.success : theme.warning 
+                }]}>
+                  {ipo.subscription.total.timesSubscribed.toFixed(2)}x
+                </Text>
+              </View>
+            </View>
+            <Text style={createStyles(theme).subscriptionUpdate}>
+              Updated: {format(ipo.subscription.lastUpdated, 'dd MMM, hh:mm a')}
+            </Text>
+          </View>
+        )}
+        
+        {/* Reviews */}
+        {ipo.reviews && ipo.reviews.length > 0 && (
+          <View style={createStyles(theme).reviewsContainer}>
+            <Text style={createStyles(theme).reviewsTitle}>Expert Reviews</Text>
+            <View style={createStyles(theme).reviewsGrid}>
+              {ipo.reviews.map((review, index) => (
+                <View key={index} style={createStyles(theme).reviewChip}>
+                  <Text style={createStyles(theme).reviewSource}>{review.source}</Text>
+                  <Text style={[
+                    createStyles(theme).reviewRating,
+                    { color: review.rating === 'APPLY' ? theme.success : 
+                             review.rating === 'AVOID' ? theme.loss : theme.warning }
+                  ]}>
+                    {review.rating.replace('_', ' ')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+        
         {ipo.status === 'OPEN' && (
           <View style={createStyles(theme).bidButtonContainer}>
             <Ionicons name="arrow-forward-circle" size={24} color={theme.primary} />
             <Text style={createStyles(theme).bidButtonText}>Tap to Place Bid</Text>
+          </View>
+        )}
+        
+        {ipo.status === 'CLOSED' && ipo.allotment && (
+          <View style={createStyles(theme).allotmentContainer}>
+            <Ionicons name="checkmark-circle" size={20} color={theme.primary} />
+            <Text style={createStyles(theme).allotmentText}>
+              Allotment: {ipo.allotment.status === 'FINALIZED' ? 'Finalized' : 'Pending'}
+            </Text>
           </View>
         )}
       </View>
@@ -497,6 +601,115 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   bidButtonText: {
     color: theme.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  gmpContainer: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.success + '40',
+  },
+  gmpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  gmpLabel: {
+    fontSize: 13,
+    color: theme.textSecondary,
+    fontWeight: '500',
+  },
+  gmpValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  subscriptionContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: theme.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  subscriptionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: 8,
+  },
+  subscriptionGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  subscriptionItem: {
+    alignItems: 'center',
+  },
+  subscriptionLabel: {
+    fontSize: 11,
+    color: theme.textMuted,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  },
+  subscriptionValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  subscriptionUpdate: {
+    fontSize: 10,
+    color: theme.textMuted,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  reviewsContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  reviewsTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.textMuted,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  reviewsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  reviewChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  reviewSource: {
+    fontSize: 10,
+    color: theme.textMuted,
+    marginBottom: 2,
+  },
+  reviewRating: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  allotmentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    marginTop: 12,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: theme.border,
+  },
+  allotmentText: {
+    color: theme.text,
     fontSize: 14,
     fontWeight: '600',
   },

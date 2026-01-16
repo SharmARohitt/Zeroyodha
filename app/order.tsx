@@ -108,6 +108,34 @@ export default function OrderScreen() {
       return `Insufficient funds. Required: ₹${requiredMargin.toFixed(2)}, Available: ₹${funds.available.toFixed(2)}`;
     }
     
+    // Validate SELL orders - check if user has holdings
+    if (orderSide === 'SELL' && productType === 'CNC') {
+      const { holdings } = useTradingStore.getState();
+      const holding = holdings.find(h => h.symbol === stock?.symbol && h.mode === mode);
+      
+      if (!holding || holding.quantity === 0) {
+        return `You don't own any shares of ${stock?.symbol}. Please buy first before selling.`;
+      }
+      
+      if (holding.quantity < qty) {
+        return `Insufficient quantity. You own ${holding.quantity} shares but trying to sell ${qty} shares.`;
+      }
+    }
+    
+    // Validate SELL for intraday (MIS/NRML) - check positions
+    if (orderSide === 'SELL' && (productType === 'MIS' || productType === 'NRML')) {
+      const { positions } = useTradingStore.getState();
+      const position = positions.find(p => p.symbol === stock?.symbol && p.product === productType && p.mode === mode);
+      
+      if (!position || position.quantity <= 0) {
+        return `No open ${productType} position found for ${stock?.symbol}. You can only sell if you have an open position.`;
+      }
+      
+      if (position.quantity < qty) {
+        return `Insufficient position quantity. You have ${position.quantity} shares but trying to sell ${qty} shares.`;
+      }
+    }
+    
     if (isIceberg) {
       const iceQty = parseInt(icebergQuantity);
       const legs = parseInt(icebergLegs);

@@ -13,10 +13,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuthStore } from '../../src/store/useAuthStore';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const onboardingSlides = [
   {
@@ -71,7 +70,6 @@ const onboardingSlides = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { theme, isDark } = useTheme();
   const { setHasSeenOnboarding } = useAuthStore();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -150,11 +148,11 @@ export default function OnboardingScreen() {
   return (
     <LinearGradient
       colors={['#2D1B69', '#1A0F3D', '#0A0520']}
-      style={createStyles(theme).container}
+      style={styles.container}
     >
-      <TouchableOpacity style={createStyles(theme).skipButton} onPress={handleSkip}>
-        <View style={createStyles(theme).skipBlur}>
-          <Text style={createStyles(theme).skipText}>Skip</Text>
+      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+        <View style={styles.skipBlur}>
+          <Text style={styles.skipText}>Skip</Text>
         </View>
       </TouchableOpacity>
 
@@ -173,11 +171,11 @@ export default function OnboardingScreen() {
           <LinearGradient
             key={index}
             colors={slide.gradient as [string, string, string]}
-            style={[createStyles(theme).slide, { width }]}
+            style={[styles.slide, { width }]}
           >
             <Animated.View
               style={[
-                createStyles(theme).content,
+                styles.content,
                 {
                   opacity: contentOpacity,
                   transform: [{ translateY: contentTranslateY }],
@@ -185,23 +183,23 @@ export default function OnboardingScreen() {
               ]}
             >
               {/* Central icon with rings - only one icon in center */}
-              <View style={createStyles(theme).iconOrbitContainer}>
+              <View style={styles.iconOrbitContainer}>
                 {/* Dashed orbit circles */}
-                <View style={[createStyles(theme).orbitCircle1, { borderColor: `${slide.accentColor}40` }]} />
-                <View style={[createStyles(theme).orbitCircle2, { borderColor: `${slide.accentColor}30` }]} />
+                <View style={[styles.orbitCircle1, { borderColor: `${slide.accentColor}40` }]} />
+                <View style={[styles.orbitCircle2, { borderColor: `${slide.accentColor}30` }]} />
                 
                 {/* Central icon - use logo for first slide, icon for others */}
-                <View style={[createStyles(theme).centralIcon, { borderColor: slide.accentColor }]}>
+                <View style={[styles.centralIcon, { borderColor: slide.accentColor }]}>
                   {slide.icon === 'logo' ? (
                     <Image
                       source={require('../../assets/images/Wealth.png')}
-                      style={createStyles(theme).centralLogoImage}
+                      style={styles.centralLogoImage}
                       resizeMode="contain"
                     />
                   ) : (
                     <LinearGradient
                       colors={[slide.iconColor, slide.gradient[0]]}
-                      style={createStyles(theme).centralIconGradient}
+                      style={styles.centralIconGradient}
                     >
                       <Ionicons name={slide.icon as any} size={48} color="#FFFFFF" />
                     </LinearGradient>
@@ -210,55 +208,55 @@ export default function OnboardingScreen() {
               </View>
 
               {/* Title */}
-              <View style={createStyles(theme).titleContainer}>
-                <Text style={createStyles(theme).title}>{slide.title}</Text>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>{slide.title}</Text>
                 {slide.appName && (
-                  <View style={createStyles(theme).appNameContainer}>
+                  <View style={styles.appNameContainer}>
                     <LinearGradient
                       colors={[slide.accentColor, `${slide.accentColor}DD`]}
-                      style={createStyles(theme).appNameGradient}
+                      style={styles.appNameGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                     >
-                      <Text style={createStyles(theme).appName}>{slide.appName}</Text>
+                      <Text style={styles.appName}>{slide.appName}</Text>
                     </LinearGradient>
                   </View>
                 )}
               </View>
 
               {/* Description */}
-              <Text style={createStyles(theme).description}>{slide.description}</Text>
+              <Text style={styles.description}>{slide.description}</Text>
             </Animated.View>
           </LinearGradient>
         ))}
       </ScrollView>
 
       {/* Footer with progress and button */}
-      <View style={createStyles(theme).footer}>
+      <View style={styles.footer}>
         {/* Progress indicator */}
-        <View style={createStyles(theme).progressContainer}>
-          <View style={createStyles(theme).progressBar}>
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
             <View style={[
-              createStyles(theme).progressFill, 
+              styles.progressFill, 
               { 
                 width: `${((currentIndex + 1) / onboardingSlides.length) * 100}%`,
                 backgroundColor: onboardingSlides[currentIndex]?.accentColor || '#7B68EE'
               }
             ]} />
           </View>
-          <Text style={createStyles(theme).progressText}>
+          <Text style={styles.progressText}>
             {currentIndex + 1} of {onboardingSlides.length}
           </Text>
         </View>
 
         {/* Pagination dots */}
-        <View style={createStyles(theme).dots}>
+        <View style={styles.dots}>
           {onboardingSlides.map((_, index) => (
             <View
               key={index}
               style={[
-                createStyles(theme).dot,
-                index === currentIndex && createStyles(theme).activeDot,
+                styles.dot,
+                index === currentIndex && styles.activeDot,
               ]}
             />
           ))}
@@ -266,7 +264,7 @@ export default function OnboardingScreen() {
 
         {/* Continue button */}
         <TouchableOpacity
-          style={createStyles(theme).nextButton}
+          style={styles.nextButton}
           onPress={handleNext}
           activeOpacity={0.8}
         >
@@ -275,11 +273,11 @@ export default function OnboardingScreen() {
               onboardingSlides[currentIndex]?.accentColor || '#7B68EE',
               `${onboardingSlides[currentIndex]?.accentColor || '#7B68EE'}DD`
             ]}
-            style={createStyles(theme).nextButtonGradient}
+            style={styles.nextButtonGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Text style={createStyles(theme).nextButtonText}>
+            <Text style={styles.nextButtonText}>
               {currentIndex === onboardingSlides.length - 1 ? 'Get Started' : 'Continue'}
             </Text>
             <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
@@ -290,7 +288,7 @@ export default function OnboardingScreen() {
   );
 }
 
-const createStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },

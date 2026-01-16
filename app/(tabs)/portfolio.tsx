@@ -276,15 +276,15 @@ const createStyles = (theme: any) => StyleSheet.create({
   },
   modeBadge: {
     backgroundColor: theme.card,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: theme.primary,
   },
   modeText: {
     color: theme.primary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   summaryContainer: {

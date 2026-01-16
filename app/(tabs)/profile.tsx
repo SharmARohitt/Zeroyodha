@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Image,
   Platform,
   Animated,
 } from 'react-native';
@@ -95,7 +94,6 @@ export default function ProfileScreen() {
               return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
               allowsEditing: true,
               aspect: [1, 1],
               quality: 0.8,
@@ -145,22 +143,87 @@ export default function ProfileScreen() {
 
   const handleModeToggle = () => {
     const newMode = mode === 'PAPER' ? 'REAL' : 'PAPER';
+    
+    if (newMode === 'REAL') {
+      Alert.alert(
+        'Switch to Live Trading',
+        'To start live trading, you need to complete KYC verification and link your bank account.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Continue',
+            onPress: () => {
+              setMode(newMode);
+              Alert.alert(
+                'Live Trading Activated',
+                'Please complete KYC verification to start trading.',
+                [{ text: 'OK' }]
+              );
+            },
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Switch to Paper Trading',
+        'Switch back to paper trading mode?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Switch',
+            onPress: () => setMode(newMode),
+          },
+        ]
+      );
+    }
+  };
+
+  const handleKYC = () => {
     Alert.alert(
-      'Switch Trading Mode',
-      `Switch to ${newMode === 'PAPER' ? 'Paper Trading' : 'Live Trading'}?`,
+      'KYC Verification',
+      'Complete your KYC to start live trading',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Switch',
-          onPress: () => setMode(newMode),
-        },
+        { text: 'Start KYC', onPress: () => {
+          // TODO: Navigate to KYC screen
+          Alert.alert('Coming Soon', 'KYC verification will be available soon');
+        }},
       ]
     );
   };
 
-  // Calculate profile statistics
-  const totalHoldings = holdings.length;
-  const totalPositions = positions.length;
+  const handleBankAccount = () => {
+    Alert.alert(
+      'Link Bank Account',
+      'Add your bank account for seamless fund transfers',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Add Account', onPress: () => {
+          // TODO: Navigate to bank account linking screen
+          Alert.alert('Coming Soon', 'Bank account linking will be available soon');
+        }},
+      ]
+    );
+  };
+
+  const handleUPI = () => {
+    Alert.alert(
+      'Link UPI',
+      'Link your UPI ID for instant payments',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Link UPI', onPress: () => {
+          // TODO: Navigate to UPI linking screen
+          Alert.alert('Coming Soon', 'UPI linking will be available soon');
+        }},
+      ]
+    );
+  };
+
+  const handlePaymentHistory = () => {
+    // TODO: Navigate to payment history screen
+    Alert.alert('Coming Soon', 'Payment history will be available soon');
+  };
 
   // Get user's first name for greeting
   const getUserName = () => {
@@ -168,7 +231,11 @@ export default function ProfileScreen() {
       return user.displayName.split(' ')[0];
     }
     if (user?.email) {
-      return user.email.split('@')[0];
+      // Extract name before @ and capitalize first letter
+      const emailName = user.email.split('@')[0];
+      // Remove numbers and special characters, capitalize first letter
+      const cleanName = emailName.replace(/[0-9._-]/g, '');
+      return cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
     }
     return 'User';
   };
@@ -233,6 +300,79 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Live Trading Options - Only show when in REAL mode */}
+      {mode === 'REAL' && (
+        <View style={createStyles(theme).section}>
+          <Text style={createStyles(theme).sectionTitle}>Live Trading Setup</Text>
+          
+          <TouchableOpacity
+            style={createStyles(theme).menuItem}
+            onPress={handleKYC}
+          >
+            <View style={createStyles(theme).menuItemLeft}>
+              <Ionicons name="shield-checkmark" size={24} color={theme.primary} />
+              <View style={createStyles(theme).menuItemText}>
+                <Text style={createStyles(theme).menuItemTitle}>KYC Verification</Text>
+                <Text style={createStyles(theme).menuItemSubtitle}>
+                  Complete your identity verification
+                </Text>
+              </View>
+            </View>
+            <View style={createStyles(theme).statusBadge}>
+              <Text style={createStyles(theme).statusText}>Pending</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={createStyles(theme).menuItem}
+            onPress={handleBankAccount}
+          >
+            <View style={createStyles(theme).menuItemLeft}>
+              <Ionicons name="business" size={24} color={theme.primary} />
+              <View style={createStyles(theme).menuItemText}>
+                <Text style={createStyles(theme).menuItemTitle}>Bank Account</Text>
+                <Text style={createStyles(theme).menuItemSubtitle}>
+                  Link your bank account
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={createStyles(theme).menuItem}
+            onPress={handleUPI}
+          >
+            <View style={createStyles(theme).menuItemLeft}>
+              <Ionicons name="flash" size={24} color={theme.primary} />
+              <View style={createStyles(theme).menuItemText}>
+                <Text style={createStyles(theme).menuItemTitle}>UPI Linking</Text>
+                <Text style={createStyles(theme).menuItemSubtitle}>
+                  Link UPI for instant payments
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={createStyles(theme).menuItem}
+            onPress={handlePaymentHistory}
+          >
+            <View style={createStyles(theme).menuItemLeft}>
+              <Ionicons name="card" size={24} color={theme.text} />
+              <View style={createStyles(theme).menuItemText}>
+                <Text style={createStyles(theme).menuItemTitle}>Payment History</Text>
+                <Text style={createStyles(theme).menuItemSubtitle}>
+                  View all transactions
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={createStyles(theme).section}>
         <Text style={createStyles(theme).sectionTitle}>Funds</Text>
@@ -456,5 +596,19 @@ const createStyles = (theme: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: theme.warning + '20',
+    borderWidth: 1,
+    borderColor: theme.warning,
+  },
+  statusText: {
+    color: theme.warning,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
 });
