@@ -1,6 +1,6 @@
 // Market Types
 export type Exchange = 'NSE' | 'BSE' | 'MCX';
-export type InstrumentType = 'EQ' | 'FUT' | 'OPT' | 'CUR' | 'COM';
+export type InstrumentType = 'EQ' | 'FUT' | 'OPT' | 'CUR' | 'COM' | 'INDEX';
 export type ProductType = 'MIS' | 'CNC' | 'NRML';
 export type OrderType = 'MARKET' | 'LIMIT' | 'SL' | 'SL-M';
 export type OrderStatus = 'OPEN' | 'EXECUTED' | 'CANCELLED' | 'REJECTED' | 'TRIGGER_PENDING';
@@ -40,6 +40,11 @@ export interface Order {
   executedAt?: Date;
   cancelledAt?: Date;
   mode: TradingMode;
+  gtt?: {
+    condition: 'SINGLE' | 'OCO';
+    triggerPrice: number;
+    limitPrice?: number;
+  };
 }
 
 export interface Position {

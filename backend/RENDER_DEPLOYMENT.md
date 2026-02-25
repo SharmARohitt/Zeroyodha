@@ -67,6 +67,8 @@ Fill in the following details:
 
 Click **"Advanced"** to add environment variables next.
 
+**Important:** If Render runs `node expo-router/entry`, your Root Directory is incorrect. Set **Root Directory** to `backend` so Render uses [backend/package.json](backend/package.json) instead of the Expo app.
+
 ## Step 3: Set Environment Variables
 
 ### 3.1 Required Environment Variables
@@ -197,6 +199,21 @@ Expected response:
 ### 5.3 Test Protected Endpoint (Requires Auth)
 
 You'll need a Firebase ID token from your mobile app.
+
+---
+
+## Troubleshooting
+
+### Error: Cannot find module '/opt/render/project/src/expo-router/entry'
+
+This means Render is starting the Expo app instead of the backend.
+
+**Fix:**
+1. Render Dashboard → Your Service → Settings
+2. Set **Root Directory** to `backend`
+3. Set **Build Command** to `npm install`
+4. Set **Start Command** to `npm start`
+5. Redeploy
 
 **Get Token from Mobile App:**
 

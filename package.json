@@ -49,6 +49,7 @@
     "@babel/core": "^7.28.5",
     "@types/react": "~19.1.10",
     "babel-preset-expo": "~54.0.9",
+    "expo-module-scripts": "^5.0.8",
     "typescript": "~5.9.2"
   },
   "private": true

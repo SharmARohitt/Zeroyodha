@@ -1,10 +1,10 @@
 import React from 'react';
-import { Text, TextStyle, Platform } from 'react-native';
+import { Text, TextStyle, StyleProp, Platform, StyleSheet } from 'react-native';
 import { iosEnhancements } from '../utils/iosEnhancements';
 
 interface IOSEnhancedTextProps {
   children: React.ReactNode;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
   variant?: 'title' | 'subtitle' | 'body' | 'caption';
   color?: string;
   textShadow?: boolean;
@@ -23,17 +23,23 @@ export default function IOSEnhancedText({
   glowing = false,
   numberOfLines,
 }: IOSEnhancedTextProps) {
-  const enhancedStyle: TextStyle = {
-    ...iosEnhancements.getTypographyStyle(variant),
-    ...style,
-    ...(color && { color }),
-    ...(Platform.OS === 'ios' && textShadow && iosEnhancements.getTextShadowStyle(textShadowColor)),
-    ...(Platform.OS === 'ios' && glowing && {
-      textShadowColor: color || '#00D4FF',
-      textShadowOffset: { width: 0, height: 0 },
-      textShadowRadius: 8,
-    }),
-  };
+  const flattenedStyle = StyleSheet.flatten(style) || {};
+
+  const enhancedStyle: StyleProp<TextStyle> = [
+    iosEnhancements.getTypographyStyle(variant) as TextStyle,
+    flattenedStyle,
+    color ? ({ color } as TextStyle) : undefined,
+    Platform.OS === 'ios' && textShadow
+      ? (iosEnhancements.getTextShadowStyle(textShadowColor) as TextStyle)
+      : undefined,
+    Platform.OS === 'ios' && glowing
+      ? ({
+          textShadowColor: color || '#00D4FF',
+          textShadowOffset: { width: 0, height: 0 },
+          textShadowRadius: 8,
+        } as TextStyle)
+      : undefined,
+  ];
 
   return (
     <Text style={enhancedStyle} numberOfLines={numberOfLines}>

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
-import { LineChart, CandlestickChart } from 'react-native-chart-kit';
+import { LineChart } from 'react-native-chart-kit';
 import { Candle } from '../types';
 
 interface KLineChartProps {

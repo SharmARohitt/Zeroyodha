@@ -177,7 +177,7 @@ class MarketDataService {
   // Generate candle data for a stock (for charting)
   generateCandleData(
     symbol: string, 
-    period: '1D' | '1W' | '1M' | '3M' = '1M'
+    period: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL' = '1M'
   ): Candle[] {
     const stock = this.getStock(symbol);
     if (!stock) return [];
@@ -195,6 +195,8 @@ class MarketDataService {
     else if (period === '1W') days = 7;
     else if (period === '1M') days = 30;
     else if (period === '3M') days = 90;
+    else if (period === '1Y') days = 365;
+    else if (period === 'ALL') days = 730;
 
     // Use realistic data generation for Indian stocks
     // This simulates realistic price movements with proper volatility

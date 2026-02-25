@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import colors from '../theme/colors';
+import { lightTheme as colors } from '../theme/colors';
 
 interface AppHeaderProps {
   title?: string;
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 50,
     paddingBottom: 12,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: colors.surface,
   },
   leftSection: {
     flexDirection: 'row',
