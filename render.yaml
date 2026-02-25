@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: zeroyodha-backend
+    env: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_ADMIN_SERVICE_ACCOUNT
+        sync: false
+      - key: DHAN_CLIENT_ID
+        sync: false
+      - key: DHAN_ACCESS_TOKEN
+        sync: false
+      - key: DHAN_OAUTH_CALLBACK_URL
+        sync: false
+      - key: DHAN_CLIENT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
