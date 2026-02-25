@@ -70,6 +70,50 @@ router.get('/quote',
 );
 
 /**
+ * @route   GET /api/market/quotes
+ * @desc    Get real-time quotes for multiple symbols
+ * @access  Private (requires Firebase authentication)
+ * @query   symbols - Comma-separated symbols (e.g. RELIANCE,TCS,INFY)
+ * @query   exchange - Exchange name (optional, default: NSE)
+ */
+router.get('/quotes',
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const rawSymbols = String(req.query.symbols || '');
+    const exchange = String(req.query.exchange || 'NSE').toUpperCase();
+
+    const symbols = [...new Set(
+      rawSymbols
+        .split(',')
+        .map((value) => value.trim().toUpperCase())
+        .filter(Boolean)
+    )];
+
+    if (symbols.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        message: 'symbols query parameter is required',
+        code: 'SYMBOLS_REQUIRED',
+      });
+    }
+
+    const limitedSymbols = symbols.slice(0, 50);
+
+    const quoteData = await dhanService.getMarketQuotes(limitedSymbols, exchange);
+
+    res.status(200).json({
+      success: true,
+      data: quoteData.data,
+      requested: quoteData.requested,
+      received: quoteData.received,
+      timestamp: new Date().toISOString(),
+      cached: false,
+    });
+  })
+);
+
+/**
  * @route   GET /api/market/holdings
  * @desc    Get user's holdings from Dhan account
  * @access  Private (requires Firebase authentication)

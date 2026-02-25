@@ -23,6 +23,49 @@ const { authMiddleware } = require('../middleware/authMiddleware');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { validateWebhook } = require('../middleware/webhookValidator');
 
+const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET || process.env.DHAN_CLIENT_SECRET || 'dhan-oauth-state-secret';
+
+const createOAuthState = (payload) => {
+  const jsonPayload = JSON.stringify(payload);
+  const encodedPayload = Buffer.from(jsonPayload).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', OAUTH_STATE_SECRET)
+    .update(encodedPayload)
+    .digest('base64url');
+
+  return `${encodedPayload}.${signature}`;
+};
+
+const parseOAuthState = (stateToken) => {
+  const [encodedPayload, providedSignature] = String(stateToken || '').split('.');
+
+  if (!encodedPayload || !providedSignature) {
+    throw new Error('Invalid OAuth state format');
+  }
+
+  const expectedSignature = crypto
+    .createHmac('sha256', OAUTH_STATE_SECRET)
+    .update(encodedPayload)
+    .digest('base64url');
+
+  if (providedSignature !== expectedSignature) {
+    throw new Error('OAuth state signature mismatch');
+  }
+
+  const payload = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8'));
+
+  if (!payload.userId || !payload.issuedAt) {
+    throw new Error('OAuth state payload missing required fields');
+  }
+
+  const ageMs = Date.now() - payload.issuedAt;
+  if (ageMs > 10 * 60 * 1000) {
+    throw new Error('OAuth state expired');
+  }
+
+  return payload;
+};
+
 /**
  * @route   GET /auth/dhan/login
  * @desc    Initiate Dhan OAuth login
@@ -56,15 +99,13 @@ router.get('/dhan/login', authMiddleware, asyncHandler(async (req, res) => {
     // Get optional redirect URL for post-auth
     const redirectUrl = req.query.redirectUrl || '/'; // Default to home
 
-    // Generate state token for CSRF protection
-    const state = crypto.randomBytes(32).toString('hex');
-    
-    // Store state in session (in production, use Redis or database)
-    // For now, we'll pass it as we can validate nonce approach
-    req.session = req.session || {};
-    req.session.oauthState = state;
-    req.session.redirectUrl = redirectUrl;
-    req.session.userId = req.user.uid; // Firebase user ID
+    // Signed state token (CSRF + user binding + expiry)
+    const state = createOAuthState({
+      nonce: crypto.randomBytes(16).toString('hex'),
+      userId: req.user.uid,
+      redirectUrl,
+      issuedAt: Date.now(),
+    });
 
     console.log(`🔐 OAuth session created for user: ${req.user.uid.substring(0, 8)}...`);
 
@@ -119,9 +160,8 @@ router.get('/dhan/callback', asyncHandler(async (req, res) => {
       });
     }
 
-    // Access session data (in production, retrieve from Redis/DB)
-    // For now, we'll accept the callback but note this limitation
-    console.log(`🔄 OAuth callback received for state: ${state.substring(0, 8)}...`);
+    const stateData = parseOAuthState(state);
+    console.log(`🔄 OAuth callback received for state: ${String(state).substring(0, 8)}...`);
 
     // Get OAuth configuration
     const DHAN_CLIENT_ID = process.env.DHAN_CLIENT_ID;
@@ -172,30 +212,7 @@ router.get('/dhan/callback', asyncHandler(async (req, res) => {
 
     console.log('✅ Access token received from Dhan');
 
-    // Extract user ID from the stored session
-    // In production, this should come from Redis/DB based on state
-    // For now, we'll need to send userId from frontend or extract from JWT
-    const userId = req.query.userId || req.headers['x-user-id'];
-
-    if (!userId) {
-      // Fallback: If no userId, generate a redirect URL for frontend to send it
-      const callbackCode = crypto.randomBytes(16).toString('hex');
-      
-      // Store token temporarily with callback code
-      tokenManager.storeToken(callbackCode, {
-        accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token || null,
-        expiresIn: tokenData.expires_in || 3600,
-      });
-
-      console.log(`📌 Token stored temporarily with code: ${callbackCode}`);
-
-      // Redirect to frontend to complete auth with userId
-      const frontendUrl = process.env.FRONTEND_OAUTH_REDIRECT || 'exp://192.168.1.100:8081';
-      return res.status(302).redirect(
-        `${frontendUrl}?oauth=dhan&status=success&code=${callbackCode}`
-      );
-    }
+    const userId = stateData.userId;
 
     // Store token for authenticated user
     tokenManager.storeToken(userId, {
@@ -207,7 +224,7 @@ router.get('/dhan/callback', asyncHandler(async (req, res) => {
     console.log(`✅ Token stored for user: ${userId.substring(0, 8)}...`);
 
     // Redirect to frontend success page
-    const redirectUrl = req.query.redirectUrl || '/trading';
+    const redirectUrl = stateData.redirectUrl || '/trading';
     const frontendUrl = process.env.FRONTEND_URL || 'exp://192.168.1.100:8081';
     
     res.status(302).redirect(

@@ -1,4 +1,5 @@
 import { Stock, MarketData, Exchange, Candle } from '../types';
+import { getMarketQuote, getMarketQuotes } from './backendApiService';
 
 // Comprehensive Indian Stock Symbols - NSE/BSE
 // NIFTY50 + BANKNIFTY + Additional Major Stocks
@@ -94,6 +95,9 @@ class MarketDataService {
   private updateCallbacks: ((data: MarketData) => void)[] = [];
   private updateInterval: NodeJS.Timeout | null = null;
   private stocks: Stock[] = [];
+  private liveModeEnabled = true;
+  private isUpdating = false;
+  private bulkQuotesSupported = true;
 
   async getInitialStocks(): Promise<Stock[]> {
     this.stocks = [...INDIAN_STOCKS, ...generateMoreStocks()];
@@ -126,39 +130,149 @@ class MarketDataService {
     this.updateCallbacks = [];
   }
 
-  private updatePrices() {
-    this.stocks.forEach((stock) => {
-      // Simulate price movement
-      const volatility = 0.002; // 0.2% volatility
-      const change = (Math.random() - 0.5) * volatility * stock.lastPrice;
-      const newPrice = Math.max(1, stock.lastPrice + change);
-      
-      const marketData: MarketData = {
-        symbol: stock.symbol,
-        lastPrice: newPrice,
-        change: newPrice - stock.prevClose,
-        changePercent: ((newPrice - stock.prevClose) / stock.prevClose) * 100,
-        volume: stock.volume + Math.floor(Math.random() * 10000),
-        high: Math.max(stock.high, newPrice),
-        low: Math.min(stock.low || newPrice, newPrice),
-        open: stock.open || newPrice,
-        prevClose: stock.prevClose,
-        bid: newPrice * 0.9999,
-        ask: newPrice * 1.0001,
-        timestamp: new Date(),
-      };
+  private async updatePrices() {
+    if (this.isUpdating) {
+      return;
+    }
 
-      // Update stock
-      stock.lastPrice = newPrice;
-      stock.change = marketData.change;
-      stock.changePercent = marketData.changePercent;
-      stock.volume = marketData.volume;
-      stock.high = marketData.high;
-      stock.low = marketData.low;
+    this.isUpdating = true;
 
-      // Notify callbacks
-      this.updateCallbacks.forEach((cb) => cb(marketData));
-    });
+    try {
+      if (this.liveModeEnabled) {
+        try {
+          const symbols = this.stocks
+            .filter((stock) => stock.instrumentType !== 'INDEX')
+            .map((stock) => stock.symbol);
+          let liveQuotesReceived = 0;
+
+          const chunkSize = 20;
+          for (let index = 0; index < symbols.length; index += chunkSize) {
+            const chunk = symbols.slice(index, index + chunkSize);
+            const quoteMap: Record<string, any> = {};
+
+            if (this.bulkQuotesSupported) {
+              try {
+                const response = await getMarketQuotes(chunk, 'NSE', {
+                  errorLogKey: 'market-bulk-quotes',
+                });
+                Object.assign(quoteMap, response?.data || {});
+              } catch (error: any) {
+                if (String(error?.message || '').includes('Route not found')) {
+                  console.warn('Bulk quotes endpoint unavailable; falling back to single quote requests.');
+                  this.bulkQuotesSupported = false;
+                } else if (
+                  String(error?.message || '').toLowerCase().includes('too many requests') ||
+                  String(error?.message || '').toLowerCase().includes('user not authenticated')
+                ) {
+                  throw error;
+                } else {
+                  throw error;
+                }
+              }
+            }
+
+            if (!this.bulkQuotesSupported) {
+              for (const symbol of chunk) {
+                try {
+                  const response = await getMarketQuote(symbol, 'NSE', {
+                    suppressErrorLog: true,
+                    errorLogKey: 'market-single-quote',
+                  });
+                  if (response?.data) {
+                    quoteMap[symbol] = response.data;
+                  }
+                } catch (error: any) {
+                  const message = String(error?.message || '').toLowerCase();
+                  if (message.includes('too many requests') || message.includes('user not authenticated')) {
+                    throw error;
+                  }
+                }
+              }
+            }
+
+            Object.keys(quoteMap).forEach((symbol) => {
+              const stock = this.stocks.find((item) => item.symbol === symbol);
+              const quote = quoteMap[symbol];
+
+              if (!stock || !quote) {
+                return;
+              }
+
+              const marketData: MarketData = {
+                symbol: stock.symbol,
+                lastPrice: Number(quote.lastPrice ?? stock.lastPrice),
+                change: Number(quote.change ?? stock.change),
+                changePercent: Number(quote.changePercent ?? stock.changePercent),
+                volume: Number(quote.volume ?? stock.volume),
+                high: Number(quote.high ?? stock.high),
+                low: Number(quote.low ?? stock.low),
+                open: Number(quote.open ?? stock.open),
+                prevClose: Number(quote.prevClose ?? stock.prevClose),
+                bid: Number(quote.lastPrice ?? stock.lastPrice) * 0.9999,
+                ask: Number(quote.lastPrice ?? stock.lastPrice) * 1.0001,
+                timestamp: quote.timestamp ? new Date(quote.timestamp) : new Date(),
+              };
+
+              stock.lastPrice = marketData.lastPrice;
+              stock.change = marketData.change;
+              stock.changePercent = marketData.changePercent;
+              stock.volume = marketData.volume;
+              stock.high = marketData.high;
+              stock.low = marketData.low;
+              stock.open = marketData.open;
+              stock.prevClose = marketData.prevClose;
+              liveQuotesReceived += 1;
+
+              this.updateCallbacks.forEach((cb) => cb(marketData));
+            });
+          }
+
+          if (liveQuotesReceived === 0) {
+            throw new Error('No live quotes received from backend');
+          }
+
+          return;
+        } catch (error) {
+          console.warn('Live market feed unavailable, switching to simulated updates:', error);
+          this.liveModeEnabled = false;
+        }
+      }
+
+      this.stocks.forEach((stock) => {
+        // Simulate price movement
+        const volatility = 0.002; // 0.2% volatility
+        const change = (Math.random() - 0.5) * volatility * stock.lastPrice;
+        const newPrice = Math.max(1, stock.lastPrice + change);
+        
+        const marketData: MarketData = {
+          symbol: stock.symbol,
+          lastPrice: newPrice,
+          change: newPrice - stock.prevClose,
+          changePercent: ((newPrice - stock.prevClose) / stock.prevClose) * 100,
+          volume: stock.volume + Math.floor(Math.random() * 10000),
+          high: Math.max(stock.high, newPrice),
+          low: Math.min(stock.low || newPrice, newPrice),
+          open: stock.open || newPrice,
+          prevClose: stock.prevClose,
+          bid: newPrice * 0.9999,
+          ask: newPrice * 1.0001,
+          timestamp: new Date(),
+        };
+
+        // Update stock
+        stock.lastPrice = newPrice;
+        stock.change = marketData.change;
+        stock.changePercent = marketData.changePercent;
+        stock.volume = marketData.volume;
+        stock.high = marketData.high;
+        stock.low = marketData.low;
+
+        // Notify callbacks
+        this.updateCallbacks.forEach((cb) => cb(marketData));
+      });
+    } finally {
+      this.isUpdating = false;
+    }
   }
 
   getStock(symbol: string): Stock | undefined {

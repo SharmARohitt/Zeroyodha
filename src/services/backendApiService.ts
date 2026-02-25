@@ -14,6 +14,24 @@
 import Constants from 'expo-constants';
 import { getAuth } from 'firebase/auth';
 
+type ApiRequestOptions = RequestInit & {
+  suppressErrorLog?: boolean;
+  errorLogKey?: string;
+};
+
+const errorLogTimestamps = new Map<string, number>();
+const ERROR_LOG_COOLDOWN_MS = 15000;
+
+const shouldLogError = (key: string): boolean => {
+  const now = Date.now();
+  const last = errorLogTimestamps.get(key) || 0;
+  if (now - last < ERROR_LOG_COOLDOWN_MS) {
+    return false;
+  }
+  errorLogTimestamps.set(key, now);
+  return true;
+};
+
 // Get API base URL from environment variables
 const getApiBaseUrl = (): string => {
   const envUrl = 
@@ -64,7 +82,7 @@ const getAuthToken = async (): Promise<string> => {
  */
 export const apiRequest = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiRequestOptions = {}
 ): Promise<any> => {
   try {
     // Get auth token
@@ -93,10 +111,13 @@ export const apiRequest = async (
 
     return data;
   } catch (error: any) {
-    console.error('API Request Error:', {
-      endpoint,
-      error: error.message,
-    });
+    const logKey = options.errorLogKey || endpoint;
+    if (!options.suppressErrorLog && shouldLogError(logKey)) {
+      console.error('API Request Error:', {
+        endpoint,
+        error: error.message,
+      });
+    }
     throw error;
   }
 };
@@ -109,10 +130,31 @@ export const apiRequest = async (
  */
 export const getMarketQuote = async (
   symbol: string,
-  exchange: string = 'NSE'
+  exchange: string = 'NSE',
+  options: ApiRequestOptions = {}
 ): Promise<any> => {
   const params = new URLSearchParams({ symbol, exchange });
-  return apiRequest(`/market/quote?${params.toString()}`);
+  return apiRequest(`/market/quote?${params.toString()}`, options);
+};
+
+/**
+ * Get real-time market quotes for multiple symbols
+ * @param {string[]} symbols - Stock symbols
+ * @param {string} exchange - Exchange (optional, default: NSE)
+ * @returns {Promise<any>} Quote map
+ */
+export const getMarketQuotes = async (
+  symbols: string[],
+  exchange: string = 'NSE',
+  options: ApiRequestOptions = {}
+): Promise<any> => {
+  const uniqueSymbols = [...new Set(symbols.map((s) => s.trim().toUpperCase()).filter(Boolean))];
+  const params = new URLSearchParams({
+    symbols: uniqueSymbols.join(','),
+    exchange,
+  });
+
+  return apiRequest(`/market/quotes?${params.toString()}`, options);
 };
 
 /**
@@ -194,6 +236,7 @@ export const testBackendConnection = async (): Promise<boolean> => {
 export default {
   apiRequest,
   getMarketQuote,
+  getMarketQuotes,
   getHoldings,
   getPositions,
   getFunds,

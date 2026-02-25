@@ -19,6 +19,7 @@ class DhanService {
     this.clientId = process.env.DHAN_CLIENT_ID;
     this.accessToken = process.env.DHAN_ACCESS_TOKEN;
     this.baseUrl = process.env.DHAN_API_BASE_URL || 'https://api.dhan.co/v2';
+    this.debugLogs = process.env.DHAN_DEBUG_LOGS === 'true';
 
     // Validate required credentials
     if (!this.clientId || !this.accessToken) {
@@ -38,11 +39,15 @@ class DhanService {
     // Add request interceptor for logging
     this.client.interceptors.request.use(
       (config) => {
-        console.log(`📡 Dhan API Request: ${config.method.toUpperCase()} ${config.url}`);
+        if (this.debugLogs) {
+          console.log(`📡 Dhan API Request: ${config.method.toUpperCase()} ${config.url}`);
+        }
         return config;
       },
       (error) => {
-        console.error('❌ Dhan API Request Error:', error.message);
+        if (this.debugLogs) {
+          console.error('❌ Dhan API Request Error:', error.message);
+        }
         return Promise.reject(error);
       }
     );
@@ -50,11 +55,15 @@ class DhanService {
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
       (response) => {
-        console.log(`✅ Dhan API Response: ${response.status} ${response.config.url}`);
+        if (this.debugLogs) {
+          console.log(`✅ Dhan API Response: ${response.status} ${response.config.url}`);
+        }
         return response;
       },
       (error) => {
-        console.error('❌ Dhan API Response Error:', error.response?.status, error.message);
+        if (this.debugLogs) {
+          console.error('❌ Dhan API Response Error:', error.response?.status, error.message);
+        }
         return Promise.reject(this.handleError(error));
       }
     );
@@ -136,6 +145,49 @@ class DhanService {
       console.error(`Error fetching quote for ${symbol}:`, error.message);
       throw error;
     }
+  }
+
+  /**
+   * Get market quotes for multiple symbols
+   * @param {string[]} symbols - Stock symbols
+   * @param {string} exchange - Exchange (NSE/BSE)
+   * @returns {Promise<Object>} Quote map keyed by symbol
+   */
+  async getMarketQuotes(symbols = [], exchange = 'NSE') {
+    if (!Array.isArray(symbols) || symbols.length === 0) {
+      return {
+        success: true,
+        data: {},
+      };
+    }
+
+    const normalizedSymbols = [...new Set(
+      symbols
+        .map((value) => String(value || '').trim().toUpperCase())
+        .filter(Boolean)
+    )];
+
+    const settled = await Promise.allSettled(
+      normalizedSymbols.map(async (symbol) => {
+        const quote = await this.getMarketQuote(symbol, exchange);
+        return [symbol, quote.data];
+      })
+    );
+
+    const quoteMap = {};
+    for (const result of settled) {
+      if (result.status === 'fulfilled') {
+        const [symbol, quoteData] = result.value;
+        quoteMap[symbol] = quoteData;
+      }
+    }
+
+    return {
+      success: true,
+      data: quoteMap,
+      requested: normalizedSymbols.length,
+      received: Object.keys(quoteMap).length,
+    };
   }
 
   /**
